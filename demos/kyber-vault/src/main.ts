@@ -35,6 +35,17 @@ const appRoot = app;
 const VARIANTS: MLKEMVariant[] = ['ml-kem-512', 'ml-kem-768', 'ml-kem-1024'];
 const ILLUSTRATIVE_Q = 17;
 
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'encaps', label: 'Encapsulate / Decapsulate' },
+  { id: 'lattice', label: 'Lattice visualizer' },
+  { id: 'params', label: 'Parameter sets' },
+  { id: 'compare', label: 'vs X25519 / RSA' },
+  { id: 'how', label: 'How LWE works' },
+];
+
+// When a tab is changed via keyboard, move focus to it after the next render.
+let pendingTabFocus = false;
+
 type Theme = 'dark' | 'light';
 
 const state: {
@@ -152,6 +163,10 @@ function getTheme(): Theme {
 function setTheme(theme: Theme): void {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
+  const themeColor = document.querySelector<HTMLMetaElement>('#theme-color-meta');
+  if (themeColor) {
+    themeColor.content = theme === 'light' ? '#f3f8ff' : '#06090f';
+  }
 }
 
 function getThemeToggleMeta(theme: Theme): { icon: string; label: string } {
@@ -262,11 +277,10 @@ function render(): void {
     </header>
 
     <nav class="tabs" role="tablist" aria-label="Demo sections">
-      <button class="tab ${state.activeTab === 'encaps' ? 'active' : ''}" data-tab="encaps" role="tab" aria-selected="${state.activeTab === 'encaps'}" aria-controls="panel-encaps" id="tab-encaps">Encapsulate / Decapsulate</button>
-      <button class="tab ${state.activeTab === 'lattice' ? 'active' : ''}" data-tab="lattice" role="tab" aria-selected="${state.activeTab === 'lattice'}" aria-controls="panel-lattice" id="tab-lattice">Lattice visualizer</button>
-      <button class="tab ${state.activeTab === 'params' ? 'active' : ''}" data-tab="params" role="tab" aria-selected="${state.activeTab === 'params'}" aria-controls="panel-params" id="tab-params">Parameter sets</button>
-      <button class="tab ${state.activeTab === 'compare' ? 'active' : ''}" data-tab="compare" role="tab" aria-selected="${state.activeTab === 'compare'}" aria-controls="panel-compare" id="tab-compare">vs X25519 / RSA</button>
-      <button class="tab ${state.activeTab === 'how' ? 'active' : ''}" data-tab="how" role="tab" aria-selected="${state.activeTab === 'how'}" aria-controls="panel-how" id="tab-how">How LWE works</button>
+      ${TABS.map(
+        (tab) =>
+          `<button class="tab ${state.activeTab === tab.id ? 'active' : ''}" data-tab="${tab.id}" role="tab" aria-selected="${state.activeTab === tab.id}" aria-controls="panel-${tab.id}" id="tab-${tab.id}" tabindex="${state.activeTab === tab.id ? '0' : '-1'}">${tab.label}</button>`,
+      ).join('')}
     </nav>
 
     <section class="panel ${state.activeTab === 'encaps' ? 'visible' : ''}" id="panel-encaps" role="tabpanel" aria-labelledby="tab-encaps" ${state.activeTab !== 'encaps' ? 'hidden' : ''}>
@@ -423,8 +437,10 @@ function render(): void {
         }).join('')}
       </div>
       <div class="card">
-        <h3>Where ML-KEM-768 is deployed today</h3>
-        <p>Chrome, Cloudflare, AWS, Signal, iCloud, OpenSSH.</p>
+        <h3>Where ML-KEM / Kyber is deployed today</h3>
+        <p><strong>ML-KEM-768</strong> (hybrid with X25519): Chrome &amp; Google services, Cloudflare, AWS, OpenSSH 9.9+.</p>
+        <p><strong>Kyber-1024</strong> (category 5): Apple iMessage PQ3, Signal PQXDH.</p>
+        <p class="muted">Most TLS/SSH deployments pair the KEM with X25519 so a break in either primitive alone is not fatal.</p>
       </div>
     </section>
 
@@ -532,6 +548,30 @@ function render(): void {
       render();
     });
   });
+
+  // ARIA tablist keyboard support: Arrow keys, Home, and End move between tabs.
+  const tablist = appRoot.querySelector<HTMLElement>('.tabs');
+  if (tablist) {
+    tablist.addEventListener('keydown', (event: KeyboardEvent) => {
+      const currentIndex = TABS.findIndex((tab) => tab.id === state.activeTab);
+      let nextIndex = currentIndex;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+        nextIndex = (currentIndex + 1) % TABS.length;
+      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+        nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
+      } else if (event.key === 'Home') {
+        nextIndex = 0;
+      } else if (event.key === 'End') {
+        nextIndex = TABS.length - 1;
+      } else {
+        return;
+      }
+      event.preventDefault();
+      state.activeTab = TABS[nextIndex].id;
+      pendingTabFocus = true;
+      render();
+    });
+  }
 
   appRoot.querySelectorAll<HTMLButtonElement>('[data-variant]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -727,6 +767,11 @@ function render(): void {
       state.learnStep = Math.min(5, state.learnStep + 1);
       render();
     });
+  }
+
+  if (pendingTabFocus) {
+    pendingTabFocus = false;
+    appRoot.querySelector<HTMLButtonElement>(`#tab-${state.activeTab}`)?.focus();
   }
 }
 

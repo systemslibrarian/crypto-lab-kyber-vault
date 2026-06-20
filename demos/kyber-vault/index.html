@@ -5,17 +5,63 @@
     <script>
       (function () {
         const saved = localStorage.getItem('theme');
-        document.documentElement.setAttribute('data-theme', saved ?? 'dark');
+        const systemLight =
+          window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        const theme = saved ?? (systemLight ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-theme', theme);
+        // Single JS-managed theme-color so it tracks manual toggles, not just system preference.
+        const meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.id = 'theme-color-meta';
+        meta.content = theme === 'light' ? '#f3f8ff' : '#06090f';
+        document.head.appendChild(meta);
       })();
     </script>
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>kyber-vault | ML-KEM (CRYSTALS-Kyber)</title>
+
+    <title>kyber-vault — ML-KEM (CRYSTALS-Kyber) interactive demo</title>
+    <meta
+      name="description"
+      content="Interactive browser demo of ML-KEM (CRYSTALS-Kyber, NIST FIPS 203): step through KeyGen, Encaps, and Decaps, run a hybrid ML-KEM + AES-256-GCM flow, visualize the LWE lattice and NTT, and benchmark ML-KEM-512/768/1024 against X25519."
+    />
+    <meta name="author" content="systemslibrarian" />
+    <meta
+      name="keywords"
+      content="ML-KEM, CRYSTALS-Kyber, FIPS 203, post-quantum cryptography, KEM, lattice, LWE, NTT, AES-256-GCM, X25519"
+    />
+    <link rel="canonical" href="https://systemslibrarian.github.io/crypto-lab-kyber-vault/" />
+
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="color-scheme" content="dark light" />
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Crypto-Lab" />
+    <meta property="og:title" content="kyber-vault — ML-KEM (CRYSTALS-Kyber) interactive demo" />
+    <meta
+      property="og:description"
+      content="Step through post-quantum key encapsulation (NIST FIPS 203), run a hybrid ML-KEM + AES-256-GCM flow, and visualize the lattice and NTT in your browser."
+    />
+    <meta property="og:url" content="https://systemslibrarian.github.io/crypto-lab-kyber-vault/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="kyber-vault — ML-KEM (CRYSTALS-Kyber) interactive demo" />
+    <meta
+      name="twitter:description"
+      content="Step through post-quantum key encapsulation (NIST FIPS 203), run a hybrid ML-KEM + AES-256-GCM flow, and visualize the lattice and NTT in your browser."
+    />
+
+    <!-- Intended display fonts (graceful system fallbacks defined in CSS) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Libre+Baskerville:ital@0;1&display=swap"
+    />
   </head>
   <body>
     <a href="#app" class="skip-link">Skip to main content</a>
     <div id="app"></div>
-    <footer style="text-align:center; padding: 1.5rem; font-size: 0.85rem; opacity: 0.7; margin-top: 2rem;">
+    <footer class="site-footer">
       Whether you eat or drink or whatever you do, do it all for the glory of God. — 1 Corinthians 10:31
     </footer>
     <script type="module" src="/src/main.ts"></script>

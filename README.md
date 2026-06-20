@@ -31,3 +31,7 @@ No environment variables are required for local development.
 ## 5. Part of the Crypto-Lab Suite
 
 This project is part of the Crypto-Lab suite at https://systemslibrarian.github.io/crypto-lab/.
+
+## 6. License
+
+Released under the [MIT License](./LICENSE).

@@ -26,8 +26,8 @@ html[data-theme='light'] {
   --ink1: #22324a;
   --ink2: #4a5f80;
   --line: #9fb2cb;
-  --accent: #0f8b66;
-  --accent-soft: rgba(15, 139, 102, 0.16);
+  --accent: #0a7253;
+  --accent-soft: rgba(10, 114, 83, 0.16);
   --warn: #8a5a00;
   --danger: #9c2f2a;
   --ok: #0d7f3a;
@@ -211,6 +211,14 @@ html[data-theme='light'] blockquote {
   background: var(--accent-soft);
 }
 
+/* Solid accent + white label keeps the active tab/pill above WCAG AA in light mode
+   (the dark→light-teal gradient drops near-black text below 4.5:1 at its dark end). */
+html[data-theme='light'] .tab.active,
+html[data-theme='light'] .pill.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
 .eyebrow {
   margin: 0;
   text-transform: uppercase;
@@ -365,6 +373,11 @@ textarea:focus-visible,
 
 .status {
   margin: 0.25rem 0 0.7rem;
+}
+
+.muted {
+  color: var(--ink2);
+  font-size: 0.85rem;
 }
 
 .sizes {
@@ -640,6 +653,17 @@ blockquote {
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+/* --- Scripture footer --- */
+.site-footer {
+  text-align: center;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--ink2);
 }
 
 /* Respect reduced motion preference */
