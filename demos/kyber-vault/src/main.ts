@@ -273,11 +273,12 @@ function render(): void {
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="${themeToggle.label}">${themeToggle.icon}</button>
       <div class="cl-hero-main">
         <h1 class="cl-hero-title">ML-KEM</h1>
-        <p class="cl-hero-sub">CRYSTALS-Kyber · NIST FIPS 203</p>
+        <p class="cl-hero-sub">CRYSTALS-Kyber · FIPS 203</p>
+        <p class="cl-hero-desc">Steps through KeyGen, Encaps, and Decaps on real ML-KEM, then chains the shared secret into an AES-256-GCM hybrid while visualizing the Learning-With-Errors lattice and the NTT behind fast polynomial math.</p>
       </div>
       <aside class="cl-hero-why" aria-label="Why it matters">
         <span class="cl-hero-why-label">WHY IT MATTERS</span>
-        <p class="cl-hero-why-text">A future quantum computer could break today's RSA and elliptic-curve key exchange. ML-KEM is NIST's standardized post-quantum replacement: two parties agree on a secret that stays safe against quantum attackers, then use it for AES-256-GCM.</p>
+        <p class="cl-hero-why-text">A future quantum computer would break the RSA and elliptic-curve key exchange securing the internet today. ML-KEM is NIST's standardized lattice-based replacement, chosen to keep shared secrets safe against quantum attackers.</p>
       </aside>
     </header>
 
