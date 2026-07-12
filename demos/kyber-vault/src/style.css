@@ -102,16 +102,18 @@ code {
   animation: fade-in 460ms ease;
 }
 
-.hero-header {
-  position: relative;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 1.4rem 1.5rem;
-  background: linear-gradient(135deg, rgba(8, 16, 27, 0.92), rgba(16, 29, 45, 0.85));
-  box-shadow: var(--shadow);
-}
+/* BEGIN cl-hero standard — managed, keep in sync across fleet */
+.cl-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:clamp(1rem,4vw,3rem);flex-wrap:wrap;margin:clamp(1rem,3vw,2rem) 0 1.5rem;position:relative;border:1px solid var(--line);border-radius:18px;padding:1.4rem 1.5rem;background:linear-gradient(135deg, rgba(8, 16, 27, 0.92), rgba(16, 29, 45, 0.85));box-shadow:var(--shadow);}
+.cl-hero-main{flex:1 1 22rem;min-width:min(100%,20rem);}
+.cl-hero-title{margin:0;font-size:clamp(1.6rem,3.8vw,2.7rem);font-weight:700;line-height:1.1;letter-spacing:.01em;color:var(--ink0);}
+.cl-hero-sub{margin:.4rem 0 0;font-size:clamp(.9rem,1.6vw,1.05rem);letter-spacing:.01em;opacity:.85;color:var(--ink1);}
+.cl-hero-why{flex:0 1 min(40%,26rem);min-width:min(100%,15rem);border:1px solid color-mix(in srgb, var(--accent) 40%, var(--line));border-radius:10px;padding:.85rem 1.05rem;background:var(--accent-soft);}
+.cl-hero-why-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.14em;color:var(--accent);}
+.cl-hero-why-text{margin:.35rem 0 0;font-size:.95rem;line-height:1.5;color:var(--ink0);}
+@media (max-width:640px){.cl-hero{flex-direction:column;}.cl-hero-why{flex-basis:auto;width:100%;}}
+/* END cl-hero standard */
 
-html[data-theme='light'] .hero-header {
+html[data-theme='light'] .cl-hero {
   background: linear-gradient(135deg, var(--bg0), var(--bg1));
 }
 
@@ -601,7 +603,7 @@ blockquote {
     overflow-wrap: break-word;
   }
 
-  .hero-header {
+  .cl-hero {
     padding: 1rem;
   }
 

@@ -269,11 +269,16 @@ function render(): void {
 
   appRoot.innerHTML = `
   <main class="shell">
-    <header class="hero-header">
+    <header class="cl-hero">
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="${themeToggle.label}">${themeToggle.icon}</button>
-      <p class="eyebrow">crypto-compare demo</p>
-      <h1>ML-KEM (CRYSTALS-Kyber) vault</h1>
-      <p class="subhead">NIST FIPS 203 standardizes post-quantum key encapsulation for real-world deployment.</p>
+      <div class="cl-hero-main">
+        <h1 class="cl-hero-title">ML-KEM</h1>
+        <p class="cl-hero-sub">CRYSTALS-Kyber · NIST FIPS 203</p>
+      </div>
+      <aside class="cl-hero-why" aria-label="Why it matters">
+        <span class="cl-hero-why-label">WHY IT MATTERS</span>
+        <p class="cl-hero-why-text">A future quantum computer could break today's RSA and elliptic-curve key exchange. ML-KEM is NIST's standardized post-quantum replacement: two parties agree on a secret that stays safe against quantum attackers, then use it for AES-256-GCM.</p>
+      </aside>
     </header>
 
     <nav class="tabs" role="tablist" aria-label="Demo sections">
