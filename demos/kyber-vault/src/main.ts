@@ -671,7 +671,7 @@ function render(): void {
         </table>`
             : ''
         }
-        <p>ML-KEM is typically 5-10x slower than X25519 in software. Hardware implementations close this gap significantly.</p>
+        <p>In native software ML-KEM is typically <em>faster</em> than X25519 — its cost is bandwidth (kilobyte keys and ciphertexts), not CPU. The numbers above are not a fair comparison: ML-KEM runs here as portable JavaScript while X25519 runs as the browser's native WebCrypto, so the JS side looks slower than the algorithm actually is.</p>
       </div>
     </section>
 
