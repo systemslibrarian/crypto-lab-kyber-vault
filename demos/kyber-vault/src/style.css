@@ -56,6 +56,13 @@ html[data-theme='light'] {
   top: 1rem;
 }
 
+/* The light theme's --accent (#0a7253) is a deep green; the near-black #062117
+   on it is only 2.86:1, failing WCAG 1.4.3. White on the same fill is 5.92:1.
+   The dark --accent (#4de6b2) is bright, so #062117 already clears at 10.73:1. */
+html[data-theme='light'] .skip-link {
+  color: #ffffff;
+}
+
 /* --- Screen reader only utility --- */
 .sr-only {
   position: absolute;
