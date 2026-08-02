@@ -6,6 +6,9 @@
   --ink1: #b9c8df;
   --ink2: #8da3c3;
   --line: #2f3f58;
+  /* text-entry control boundary — WCAG 1.4.11 needs >=3:1; this reaches 4.1:1
+     on the near-black textarea fill and 3.8:1 on the gradient page surface. */
+  --line-control: #5f7391;
   --accent: #4de6b2;
   --accent-soft: rgba(77, 230, 178, 0.16);
   --warn: #ffd36a;
@@ -26,6 +29,9 @@ html[data-theme='light'] {
   --ink1: #22324a;
   --ink2: #4a5f80;
   --line: #9fb2cb;
+  /* text-entry control boundary — 4.1:1 on the --bg0 textarea fill and page
+     surface (was --line #9fb2cb, 2.0:1). */
+  --line-control: #66799a;
   --accent: #0a7253;
   --accent-soft: rgba(10, 114, 83, 0.16);
   --warn: #8a5a00;
@@ -435,7 +441,9 @@ textarea:focus-visible,
 textarea {
   width: 100%;
   margin: 0.5rem 0 0.8rem;
-  border: 1px solid var(--line);
+  /* The boundary is how the field is found — it must clear WCAG 1.4.11's 3:1,
+     so it uses --line-control rather than the decorative --line. */
+  border: 1px solid var(--line-control);
   border-radius: 12px;
   padding: 0.7rem;
   font: 0.95rem/1.45 var(--mono);
