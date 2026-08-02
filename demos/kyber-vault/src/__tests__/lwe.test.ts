@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   Q,
+  bruteForceSearchSpace,
+  centeredRepresentative,
   cleanB,
   gaussianSolve,
   generateLWEInstance,
@@ -39,6 +41,18 @@ describe('LWE arithmetic engine', () => {
       return;
     }
     throw new Error('expected at least one full-rank system in 8 draws');
+  });
+
+  it('renders modular residues as the same centered small secret', () => {
+    expect([15, 1, 0, 2].map((value) => centeredRepresentative(value, 17))).toEqual([-2, 1, 0, 2]);
+  });
+
+  it('reports the displayed toy search space from its actual n and q', () => {
+    const message = bruteForceSearchSpace(4, 17);
+    expect(message).toContain('n=4, q=17');
+    expect(message).toContain('83,521 candidates');
+    expect(message).toContain('not an ML-KEM security estimate');
+    expect(message).not.toContain('q=3329');
   });
 
   it('the SAME elimination fails to recover s once noise e is added (b = A*s + e)', () => {

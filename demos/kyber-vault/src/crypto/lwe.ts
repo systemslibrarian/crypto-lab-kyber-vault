@@ -16,6 +16,12 @@ function mod(value: number, q: number): number {
   return ((value % q) + q) % q;
 }
 
+/** Convert a residue in [0,q) to its small centered representative. */
+export function centeredRepresentative(value: number, q: number): number {
+  const residue = mod(value, q);
+  return residue > Math.floor(q / 2) ? residue - q : residue;
+}
+
 /** Modular inverse of a mod prime q via Fermat's little theorem (q must be prime). */
 function modInverse(a: number, q: number): number {
   let result = 1;
@@ -156,12 +162,12 @@ function formatBigInt(value: bigint): string {
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-export function bruteForceSearchSpace(n: number): string {
-  if (n <= 0) {
-    throw new Error('n must be positive');
+export function bruteForceSearchSpace(n: number, q = Q): string {
+  if (n <= 0 || q <= 1) {
+    throw new Error('n must be positive and q must be greater than one');
   }
-  const space = BigInt(Q) ** BigInt(n);
-  return `For n=${n} and q=${Q}, brute-force secret search is q^n = ${formatBigInt(space)} candidates.`;
+  const space = BigInt(q) ** BigInt(n);
+  return `For this displayed n=${n}, q=${q} toy, exhaustive coefficient search is q^n = ${formatBigInt(space)} candidates. This deliberately small teaching instance is searchable; it is not an ML-KEM security estimate.`;
 }
 
 export function generateIllustrativeLWEInstance(n: number, m: number, q: number): LWEInstance {

@@ -13,6 +13,7 @@ import {
 import {
   Q,
   bruteForceSearchSpace,
+  centeredRepresentative,
   cleanB,
   gaussianSolve,
   generateIllustrativeLWEInstance,
@@ -67,6 +68,7 @@ const state: {
   message: string;
   hybridPayload: HybridEncryptResult | null;
   hybridDecrypted: string;
+  hybridNotice: string;
   hybridError: string;
   lwe: LWEInstance;
   latticeMessage: string;
@@ -100,6 +102,7 @@ const state: {
   message: 'Quantum-safe hello from kyber-vault.',
   hybridPayload: null,
   hybridDecrypted: '',
+  hybridNotice: '',
   hybridError: '',
   lwe: generateIllustrativeLWEInstance(4, 4, ILLUSTRATIVE_Q),
   latticeMessage: 'Educational instance uses q=17. Core ML-KEM uses q=3329.',
@@ -128,6 +131,7 @@ function resetFlow(): void {
   state.timings = {};
   state.hybridPayload = null;
   state.hybridDecrypted = '';
+  state.hybridNotice = '';
   state.hybridError = '';
   state.status = 'Variant changed. Run KeyGen to start a fresh session.';
 }
@@ -474,6 +478,7 @@ function render(): void {
         <p><strong>IV</strong>: <code>${state.hybridPayload?.aesIV ?? '--'}</code></p>
         <p><strong>Tag</strong>: <code>${state.hybridPayload?.aesTag ?? '--'}</code></p>
         <p class="ok-text" aria-live="polite">${state.hybridDecrypted ? `Decrypted plaintext: ${escapeHtml(state.hybridDecrypted)}` : ''}</p>
+        <p id="hybrid-status" class="status" role="status" aria-live="polite">${escapeHtml(state.hybridNotice)}</p>
         <p class="bad-text" role="alert" aria-live="assertive">${escapeHtml(state.hybridError)}</p>
       </div>
     </section>
@@ -511,12 +516,12 @@ function render(): void {
                   !state.latticeSolve.result.solvable
                     ? 'This random A was singular over the field — press "New random instance" and try again.'
                     : state.latticeSolve.mode === 'clean'
-                      ? `Recovered s = [${state.latticeSolve.result.recovered!.join(', ')}]. ${
+                      ? `Recovered s = [${state.latticeSolve.result.recovered!.map((value) => centeredRepresentative(value, ILLUSTRATIVE_Q)).join(', ')}] (Z₁₇ residues converted to centered representatives). ${
                           state.latticeSolve.result.correct
                             ? 'Exactly the true secret — with no noise, LWE is just linear algebra and falls instantly.'
                             : 'Unexpected mismatch on the clean system.'
                         }`
-                      : `Recovered "s" = [${state.latticeSolve.result.recovered!.join(', ')}]. ${
+                      : `Recovered "s" = [${state.latticeSolve.result.recovered!.map((value) => centeredRepresentative(value, ILLUSTRATIVE_Q)).join(', ')}] (centered representatives). ${
                           state.latticeSolve.result.correct
                             ? '(This draw happened to survive — try a new instance.)'
                             : `The true secret was [${state.lwe.s.join(', ')}]. The noise defeated the elimination — this gap is the LWE hardness assumption.`
@@ -528,7 +533,7 @@ function render(): void {
 
         <div class="controls" style="margin-top:0.7rem">
           <button id="new-lwe">New random instance</button>
-          <button id="bruteforce">Show why brute force fails</button>
+          <button id="bruteforce">Count this toy search space</button>
         </div>
         <p class="status" role="status" aria-live="polite">${escapeHtml(state.latticeMessage)}</p>
       </div>
@@ -853,8 +858,10 @@ function render(): void {
         }
         state.hybridPayload = await hybridEncrypt(state.message, state.keyPair.publicKey, state.variant);
         state.hybridDecrypted = '';
+        state.hybridNotice = 'Fresh ciphertext created. Decrypt to run authentication.';
         state.hybridError = '';
       } catch (error) {
+        state.hybridNotice = '';
         state.hybridError = (error as Error).message;
       }
       render();
@@ -869,8 +876,10 @@ function render(): void {
           throw new Error('Generate keys and encrypt first');
         }
         state.hybridDecrypted = await hybridDecrypt(state.hybridPayload, state.keyPair.privateKey);
+        state.hybridNotice = 'Authentication passed during this decryption.';
         state.hybridError = '';
       } catch (error) {
+        state.hybridNotice = '';
         state.hybridError = (error as Error).message;
         state.hybridDecrypted = '';
       }
@@ -888,7 +897,8 @@ function render(): void {
         ...state.hybridPayload,
         mlkemCiphertext: flipBase64Byte(state.hybridPayload.mlkemCiphertext, 3),
       };
-      state.hybridError = 'Ciphertext tampered. Decryption should fail authentication.';
+      state.hybridNotice = 'Ciphertext changed. Authentication has not run yet; click Decrypt message to test it.';
+      state.hybridError = '';
       state.hybridDecrypted = '';
       render();
     });
@@ -925,7 +935,7 @@ function render(): void {
   const bruteForceButton = appRoot.querySelector<HTMLButtonElement>('#bruteforce');
   if (bruteForceButton) {
     bruteForceButton.addEventListener('click', () => {
-      state.latticeMessage = bruteForceSearchSpace(6);
+      state.latticeMessage = bruteForceSearchSpace(LWE_DIM, ILLUSTRATIVE_Q);
       render();
     });
   }
