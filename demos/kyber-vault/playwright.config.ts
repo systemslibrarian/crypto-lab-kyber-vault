@@ -6,7 +6,7 @@ import { defineConfig } from '@playwright/test';
  * Run `npm run build` first (CI does).
  */
 const BASE = '/crypto-lab-kyber-vault/';
-const PORT = 4221;
+const PORT = 4715;
 const ORIGIN = `http://localhost:${PORT}`;
 
 export default defineConfig({
