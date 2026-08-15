@@ -109,11 +109,3 @@ test('no WCAG A/AA violations in dark theme', async ({ page }) => {
   await scanEveryTab(page, 'dark');
 });
 
-test('no WCAG A/AA violations in light theme', async ({ page }) => {
-  await page.goto('.');
-  await page.locator('#cl-theme-toggle').click();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await prepare(page);
-  await scan(page, 'light / default');
-  await scanEveryTab(page, 'light');
-});

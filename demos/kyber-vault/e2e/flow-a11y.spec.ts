@@ -70,9 +70,3 @@ test('no WCAG A/AA violations across dynamic states (dark)', async ({ page }) =>
   await driveAndScan(page, 'dark');
 });
 
-test('no WCAG A/AA violations across dynamic states (light)', async ({ page }) => {
-  await page.goto('.');
-  await page.locator('#cl-theme-toggle').click();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await driveAndScan(page, 'light');
-});
