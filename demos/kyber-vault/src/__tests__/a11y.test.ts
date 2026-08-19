@@ -41,11 +41,19 @@ describe('accessibility structure', () => {
     }
   });
 
-  it('labels non-text visualizations and the icon-only theme toggle', () => {
-    expect(document.querySelector('#theme-toggle')?.getAttribute('aria-label')).toBeTruthy();
+  it('labels non-text visualizations', () => {
     for (const img of document.querySelectorAll('[role="img"]')) {
       expect(img.getAttribute('aria-label'), img.outerHTML).toBeTruthy();
     }
+  });
+
+  // Dark is the only theme and it is pinned in <head>. The app must not build
+  // a theme control at all -- the fleet's no-toggle promise used to rest on a
+  // single display:none rule hiding a fully wired button.
+  it('renders no theme control', () => {
+    expect(
+      document.querySelector('#theme-toggle,#themeToggle,.theme-toggle,[data-theme-toggle]'),
+    ).toBeNull();
   });
 
   it('keeps inactive tabpanels out of the accessibility tree', () => {

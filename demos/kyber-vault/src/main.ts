@@ -53,8 +53,6 @@ const TABS: { id: TabId; label: string }[] = [
 // When a tab is changed via keyboard, move focus to it after the next render.
 let pendingTabFocus = false;
 
-type Theme = 'dark' | 'light';
-
 const state: {
   activeTab: TabId;
   variant: MLKEMVariant;
@@ -169,26 +167,6 @@ function escapeHtml(text: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-}
-
-function getTheme(): Theme {
-  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-}
-
-function setTheme(theme: Theme): void {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
-  const themeColor = document.querySelector<HTMLMetaElement>('#theme-color-meta');
-  if (themeColor) {
-    themeColor.content = theme === 'light' ? '#f3f8ff' : '#06090f';
-  }
-}
-
-function getThemeToggleMeta(theme: Theme): { icon: string; label: string } {
-  if (theme === 'dark') {
-    return { icon: '🌙', label: 'Switch to light mode' };
-  }
-  return { icon: '☀️', label: 'Switch to dark mode' };
 }
 
 /**
@@ -350,8 +328,6 @@ async function runNextStep(): Promise<void> {
 
 function render(): void {
   const params = ML_KEM_PARAMS[state.variant];
-  const theme = getTheme();
-  const themeToggle = getThemeToggleMeta(theme);
   const stepDescriptions = [
     '1. KeyGen (Bob) - Bob creates ML-KEM keypair.',
     '2. Encaps (Alice) - Alice derives shared secret + ciphertext.',
@@ -362,7 +338,6 @@ function render(): void {
   appRoot.innerHTML = `
   <main class="shell">
     <header class="cl-hero">
-      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="${themeToggle.label}">${themeToggle.icon}</button>
       <div class="cl-hero-main">
         <h1 class="cl-hero-title">ML-KEM</h1>
         <p class="cl-hero-sub">CRYSTALS-Kyber · FIPS 203</p>
@@ -734,17 +709,6 @@ function render(): void {
     textarea.value = state.message;
     textarea.addEventListener('input', () => {
       state.message = textarea.value;
-    });
-  }
-
-  const themeToggleButton = appRoot.querySelector<HTMLButtonElement>('#theme-toggle');
-  if (themeToggleButton) {
-    themeToggleButton.addEventListener('click', () => {
-      const nextTheme: Theme = getTheme() === 'dark' ? 'light' : 'dark';
-      setTheme(nextTheme);
-      const nextMeta = getThemeToggleMeta(nextTheme);
-      themeToggleButton.textContent = nextMeta.icon;
-      themeToggleButton.setAttribute('aria-label', nextMeta.label);
     });
   }
 
