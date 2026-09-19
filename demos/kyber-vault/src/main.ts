@@ -1,5 +1,13 @@
 import './style.css';
-import { runBenchmark, type BenchmarkReport } from './benchmark';
+import {
+  BENCHMARK_MEASURED_ITERATIONS,
+  BENCHMARK_WARMUP_ITERATIONS,
+  benchmarkReportToCsv,
+  benchmarkReportToJson,
+  runBenchmark,
+  type BenchmarkReport,
+  type TimingStats,
+} from './benchmark';
 import { flipBase64Byte, hybridDecrypt, hybridEncrypt, type HybridEncryptResult } from './crypto/hybrid';
 import {
   ML_KEM_PARAMS,
@@ -162,8 +170,23 @@ function formatMs(value: number | undefined): string {
   return `${value.toFixed(3)} ms`;
 }
 
-function formatOps(value: number): string {
-  return `${value.toFixed(1)} ops/s`;
+function formatOps(value: number | null): string {
+  return value === null ? 'timer resolution limit' : `${value.toFixed(1)} ops/s`;
+}
+
+function renderTimingRow(scheme: string, operation: string, stats: TimingStats): string {
+  return `<tr><th scope="row">${scheme}</th><td>${operation}</td><td>${stats.medianMs.toFixed(3)} ms</td><td>${stats.p95Ms.toFixed(3)} ms</td><td>${formatOps(stats.medianOpsPerSecond)}</td><td>${stats.samplesMs.length}</td></tr>`;
+}
+
+function downloadText(filename: string, contents: string, mimeType: string): void {
+  const url = URL.createObjectURL(new Blob([contents], { type: mimeType }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 function escapeHtml(text: string): string {
@@ -713,53 +736,72 @@ function render(): void {
         <h2>KEM vs key exchange</h2>
         <p>X25519 is classical ECDH, while ML-KEM is a post-quantum key encapsulation mechanism. Hybrid migration combines X25519 + ML-KEM to hedge against both quantum and implementation risk.</p>
       </div>
-      <div class="card">
-        <h3>Size comparison</h3>
+      <div class="card wire-cost-card">
+        <p class="parameter-kicker">Comparable payload accounting</p>
+        <h3>Fresh key-establishment wire cost</h3>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Fresh key establishment wire cost comparison">
         <table>
           <thead>
-            <tr><th scope="col">Scheme</th><th scope="col">Public key / payload</th><th scope="col">Notes</th></tr>
+            <tr><th scope="col">Construction</th><th scope="col">Recipient advertisement</th><th scope="col">Initiator response</th><th scope="col">Total key material</th><th scope="col">Security role</th></tr>
           </thead>
           <tbody>
-            <tr><td>RSA-2048</td><td>256 B modulus</td><td>Classical, no PQ security</td></tr>
-            <tr><td>X25519</td><td>32 B public key</td><td>Fast classical ECDH</td></tr>
-            <tr><td>ML-KEM-512</td><td>800 B public key</td><td>PQ category 1</td></tr>
-            <tr><td>ML-KEM-768</td><td>1184 B public key</td><td>PQ category 3</td></tr>
-            <tr><td>ML-KEM-1024</td><td>1568 B public key</td><td>PQ category 5</td></tr>
+            <tr><th scope="row">X25519 ephemeral ECDH</th><td>32 B public share</td><td>32 B public share</td><td><strong>64 B</strong></td><td>Classical only</td></tr>
+            ${VARIANTS.map((variant) => {
+              const p = ML_KEM_PARAMS[variant];
+              return `<tr><th scope="row">${variantDisplay(variant)}</th><td>${p.publicKey} B encapsulation key</td><td>${p.ciphertext} B ciphertext</td><td><strong>${p.publicKey + p.ciphertext} B</strong></td><td>NIST category ${p.securityCategory}</td></tr>`;
+            }).join('')}
+            <tr><th scope="row">X25519 + ML-KEM-768</th><td>1216 B (32 + 1184)</td><td>1120 B (32 + 1088)</td><td><strong>2336 B</strong></td><td>Hybrid classical + category 3</td></tr>
           </tbody>
         </table>
+        </div>
+        <p class="muted">Construction-level bytes only: one fresh public contribution from each side, excluding protocol framing, algorithm identifiers, certificates, signatures, record headers, and retransmission. With a cached ML-KEM public key, the online payload is only the ciphertext column.</p>
       </div>
-      <div class="card">
-        <h3>Benchmark</h3>
-        <p>Run 100 iterations each for KeyGen, Encaps, Decaps and compare to X25519 ECDH.</p>
+      <div class="card benchmark-card">
+        <p class="parameter-kicker">Reproducible local measurement</p>
+        <h3>Browser benchmark</h3>
+        <p>Each operation gets ${BENCHMARK_WARMUP_ITERATIONS} unmeasured warm-up runs followed by ${BENCHMARK_MEASURED_ITERATIONS} individually timed samples. The summary reports median and nearest-rank p95 wall-clock latency; raw samples and environment metadata are exportable.</p>
         <button id="run-benchmark" ${state.benchmarkRunning ? 'disabled' : ''}>Run benchmark</button>
-        <p aria-live="polite">${escapeHtml(state.benchmarkProgress)}</p>
+        <p class="benchmark-progress" aria-live="polite">${escapeHtml(state.benchmarkProgress)}</p>
         ${
           state.benchmark
-            ? `<table>
+            ? `<div class="benchmark-environment" aria-label="Benchmark environment">
+                <p><strong>Captured</strong><time datetime="${state.benchmark.environment.generatedAt}">${escapeHtml(state.benchmark.environment.generatedAt)}</time></p>
+                <p><strong>Implementation</strong><code>${escapeHtml(state.benchmark.environment.implementation)}</code></p>
+                <p><strong>Platform</strong>${escapeHtml(state.benchmark.environment.platform)}</p>
+                <p><strong>Logical CPUs</strong>${state.benchmark.environment.hardwareConcurrency ?? 'not reported'}</p>
+                <p><strong>Cross-origin isolated</strong>${state.benchmark.environment.crossOriginIsolated ? 'yes' : 'no'}</p>
+              </div>
+              <div class="table-scroll" tabindex="0" role="region" aria-label="Benchmark latency results">
+              <table class="benchmark-results">
           <thead>
-            <tr><th scope="col">Variant</th><th scope="col">KeyGen</th><th scope="col">Encaps</th><th scope="col">Decaps</th></tr>
+            <tr><th scope="col">Scheme</th><th scope="col">Operation</th><th scope="col">Median</th><th scope="col">p95</th><th scope="col">Median rate</th><th scope="col">Samples</th></tr>
           </thead>
           <tbody>
             ${state.benchmark.variants
-              .map(
-                (row) =>
-                  `<tr><td>${variantDisplay(row.variant)}</td><td>${formatOps(
-                    row.keygenOpsPerSecond,
-                  )}</td><td>${formatOps(row.encapsOpsPerSecond)}</td><td>${formatOps(
-                    row.decapsOpsPerSecond,
-                  )}</td></tr>`,
-              )
+              .flatMap((row) => [
+                renderTimingRow(variantDisplay(row.variant), 'KeyGen', row.keygen),
+                renderTimingRow(variantDisplay(row.variant), 'Encaps', row.encaps),
+                renderTimingRow(variantDisplay(row.variant), 'Decaps', row.decaps),
+              ])
               .join('')}
-            <tr><td>X25519 ECDH</td><td colspan="3">${
-              state.benchmark.x25519OpsPerSecond === null
-                ? 'Not available in this browser runtime'
-                : formatOps(state.benchmark.x25519OpsPerSecond)
-            }</td></tr>
+            ${state.benchmark.x25519
+              ? `${renderTimingRow('X25519 Web Crypto', 'KeyGen', state.benchmark.x25519.keygen)}${renderTimingRow('X25519 Web Crypto', 'deriveBits', state.benchmark.x25519.derive)}`
+              : '<tr><th scope="row">X25519 Web Crypto</th><td colspan="5">Not available in this browser runtime</td></tr>'}
           </tbody>
-        </table>`
+        </table></div>
+        <div class="controls controls-spaced">
+          <button id="download-benchmark-json">Download raw JSON</button>
+          <button id="download-benchmark-csv">Download raw CSV</button>
+        </div>
+        <details class="benchmark-method">
+          <summary>Method and interpretation limits</summary>
+          <p>The timer wraps each awaited operation with <code>performance.now()</code>. Setup data is prepared outside measured regions. ML-KEM reuses one key/ciphertext per operation class; X25519 separately measures native key generation and <code>deriveBits</code>.</p>
+          <p>User agent: <code>${escapeHtml(state.benchmark.environment.userAgent)}</code></p>
+          <p>These are measurements of this browser session, not portable algorithm rankings. CPU power state, JIT, browser load, timer precision, and the pure-JavaScript versus native Web Crypto backends all affect results.</p>
+        </details>`
             : ''
         }
-        <p>In native software ML-KEM is typically <em>faster</em> than X25519 — its cost is bandwidth (kilobyte keys and ciphertexts), not CPU. The numbers above are not a fair comparison: ML-KEM runs here as portable JavaScript while X25519 runs as the browser's native WebCrypto, so the JS side looks slower than the algorithm actually is.</p>
+        <p class="honesty-note"><strong>Interpret carefully:</strong> ML-KEM runs here as portable JavaScript while X25519 runs in the browser's native Web Crypto backend. Compare operations within this session; do not generalize this chart to optimized native libraries or other devices.</p>
       </div>
     </section>
 
@@ -1075,6 +1117,28 @@ function render(): void {
       }
       state.benchmarkRunning = false;
       render();
+    });
+  }
+
+  const downloadBenchmarkJson = appRoot.querySelector<HTMLButtonElement>('#download-benchmark-json');
+  if (downloadBenchmarkJson && state.benchmark) {
+    downloadBenchmarkJson.addEventListener('click', () => {
+      downloadText(
+        'kyber-vault-benchmark.json',
+        benchmarkReportToJson(state.benchmark!),
+        'application/json',
+      );
+    });
+  }
+
+  const downloadBenchmarkCsv = appRoot.querySelector<HTMLButtonElement>('#download-benchmark-csv');
+  if (downloadBenchmarkCsv && state.benchmark) {
+    downloadBenchmarkCsv.addEventListener('click', () => {
+      downloadText(
+        'kyber-vault-benchmark.csv',
+        benchmarkReportToCsv(state.benchmark!),
+        'text/csv',
+      );
     });
   }
 

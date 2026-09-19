@@ -67,7 +67,29 @@ The selected vector IDs and original NIST file paths are preserved in
 conformance evidence; they are not a claim that this educational application
 or its JavaScript dependency has received a NIST CMVP validation certificate.
 
-## 6. Source Freshness and Standards Status
+## 6. Benchmark and Wire-Cost Method
+
+The browser benchmark uses 10 unmeasured warm-up operations followed by 50
+individually timed samples for each ML-KEM KeyGen, Encaps, and Decaps operation.
+X25519 key generation and `deriveBits` are measured separately. Results report
+median and nearest-rank p95 wall-clock latency from `performance.now()`, plus a
+median-derived operations/second value. JSON and long-form CSV downloads retain
+every raw sample and the timestamp, user agent, platform, logical CPU count,
+cross-origin isolation state, iteration counts, and exact ML-KEM library version.
+
+Results describe one browser session only. ML-KEM runs as portable JavaScript;
+X25519 runs in the browser's native Web Crypto backend. CPU state, JIT behavior,
+browser load, and timer precision affect the numbers, so they are not portable
+algorithm rankings.
+
+The wire-cost table compares complete construction-level key material for a
+fresh establishment: both 32-byte X25519 public shares, or an ML-KEM
+encapsulation key plus its ciphertext. It also includes X25519 + ML-KEM-768.
+Totals exclude protocol framing, identifiers, certificates, signatures, record
+headers, and retransmissions; if an ML-KEM public key is already cached, only
+the ciphertext is an online cost.
+
+## 7. Source Freshness and Standards Status
 
 Sources and claims were last reviewed on **September 19, 2026**.
 
@@ -77,6 +99,6 @@ Sources and claims were last reviewed on **September 19, 2026**.
 
 Final ML-KEM and pre-standard CRYSTALS-Kyber must not be treated as interchangeable. Algorithm details changed during standardization, so implementations must not assume byte-compatible keys, ciphertexts, or protocol encodings.
 
-## 7. Part of the Crypto-Lab Suite
+## 8. Part of the Crypto-Lab Suite
 
 This demo is part of the broader Crypto-Lab collection at https://systemslibrarian.github.io/crypto-lab/.
