@@ -16,9 +16,130 @@
   --ok: #5dfc95;
   --shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
 
-  --sans: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  --serif: "Libre Baskerville", Georgia, serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --serif: Georgia, "Times New Roman", serif;
+}
+
+/* Shared Crypto Lab chrome lives in the versioned stylesheet so the page can
+   enforce style-src 'self' without unsafe-inline. */
+.cl-topbar {
+  --cl-ink: color-mix(in srgb, var(--accent, #35d6bb) 60%, #eafff8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem clamp(0.9rem, 3vw, 2rem);
+  background: #0b1512;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent, #35d6bb) 22%, transparent);
+  font-family: var(--mono);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.cl-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  text-decoration: none;
+}
+
+.cl-badge {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--accent, #35d6bb);
+  border-radius: 10px;
+  color: var(--cl-ink);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
+.cl-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.cl-title {
+  color: #eafff8;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.12em;
+}
+
+.cl-sub {
+  color: #5e8b80;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.cl-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent, #35d6bb) 38%, transparent);
+  background: transparent;
+  color: var(--cl-ink);
+  cursor: pointer;
+  font: 700 0.78rem/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cl-btn:hover {
+  background: color-mix(in srgb, var(--accent, #35d6bb) 14%, transparent);
+  border-color: var(--accent, #35d6bb);
+  color: #eafff8;
+}
+
+.cl-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.cl-skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 1001;
+  padding: 0.55rem 1rem;
+  border-radius: 0 0 10px 10px;
+  background: #eafff8;
+  color: #0b1512;
+  font: 700 0.8rem/1.2 var(--mono);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.cl-skip-link:focus {
+  top: 0;
+  outline: 2px solid var(--accent, #35d6bb);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .cl-sub {
+    display: none;
+  }
+  .cl-btn span {
+    display: none;
+  }
 }
 
 html[data-theme='light'] {
@@ -373,6 +494,10 @@ textarea:focus-visible,
   gap: 0.5rem;
 }
 
+.controls-spaced {
+  margin-top: 0.7rem;
+}
+
 .parameter-choice {
   border-color: rgba(77, 230, 178, 0.42);
 }
@@ -549,8 +674,19 @@ textarea {
   height: 10px;
   border-radius: 99px;
   margin-top: 0.6rem;
-  width: var(--w);
   background: linear-gradient(90deg, #45a4ff, #4de6b2);
+}
+
+.bar-ml-kem-512 {
+  width: 51%;
+}
+
+.bar-ml-kem-768 {
+  width: 76%;
+}
+
+.bar-ml-kem-1024 {
+  width: 100%;
 }
 
 /* --- NTT visualisation --- */
@@ -1117,10 +1253,20 @@ abbr[title] {
 
 /* Minimum touch target size (WCAG 2.5.5 level AAA = 44px) */
 @media (pointer: coarse) {
+  .cl-btn {
+    min-height: 44px;
+  }
+
   .tab,
   .pill,
   button {
     min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (pointer: coarse) and (min-width: 380px) {
+  .cl-btn {
     min-width: 44px;
   }
 }

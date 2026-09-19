@@ -337,7 +337,7 @@ function render(): void {
 
   appRoot.innerHTML = `
   <main class="shell">
-    <header class="cl-hero">
+    <header class="cl-hero" role="group">
       <div class="cl-hero-main">
         <h1 class="cl-hero-title">ML-KEM</h1>
         <p class="cl-hero-sub">CRYSTALS-Kyber · FIPS 203</p>
@@ -517,7 +517,7 @@ function render(): void {
             : ''
         }
 
-        <div class="controls" style="margin-top:0.7rem">
+        <div class="controls controls-spaced">
           <button id="new-lwe">New random instance</button>
           <button id="bruteforce">Count this toy search space</button>
         </div>
@@ -538,7 +538,7 @@ function render(): void {
             <code>[${state.nttB.join(', ')}]</code>
           </div>
         </div>
-        <div class="controls" style="margin-top:0.7rem">
+        <div class="controls controls-spaced">
           <button id="ntt-run">Run NTT multiply</button>
           <button id="ntt-new">New random polynomials</button>
         </div>
@@ -601,7 +601,7 @@ function render(): void {
             <p>Private key: ${p.privateKey} bytes</p>
             <p>Ciphertext: ${p.ciphertext} bytes</p>
             <p class="muted">${p.guidance}</p>
-            <div class="bar" style="--w:${Math.round((p.publicKey / 1568) * 100)}%" role="img" aria-label="Relative key size: ${Math.round((p.publicKey / 1568) * 100)}%"></div>
+            <div class="bar bar-${variant}" role="img" aria-label="Relative key size: ${Math.round((p.publicKey / 1568) * 100)}%"></div>
           </article>`;
         }).join('')}
       </div>

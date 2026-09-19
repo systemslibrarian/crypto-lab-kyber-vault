@@ -22,11 +22,16 @@ In the demo, you can step through KeyGen, Encaps, and Decaps, inspect artifacts 
 ```bash
 git clone https://github.com/systemslibrarian/crypto-lab-kyber-vault.git
 cd crypto-lab-kyber-vault/demos/kyber-vault
-npm install
+npm ci
 npm run dev
 ```
 
 No environment variables are required for local development.
+
+The production page enforces a strict Content Security Policy, contains no
+inline scripts or styles, and makes no third-party runtime requests. A
+Playwright security gate fails on CSP violations, browser errors, or any
+off-origin request.
 
 ## 5. Part of the Crypto-Lab Suite
 

@@ -17,10 +17,8 @@ const TAB_IDS = ['encaps', 'lattice', 'params', 'compare', 'how'] as const;
  * flag contrast) while axe reads computed styles, and expand any collapsibles.
  */
 async function prepare(page: Page): Promise<void> {
-  await page.addStyleTag({
-    content: `*,*::before,*::after{animation:none!important;transition:none!important;}
-      .panel,.card,.shell{opacity:1!important;}`,
-  });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForTimeout(50);
   await page.evaluate(() => {
     for (const details of Array.from(document.querySelectorAll('details'))) {
       (details as HTMLDetailsElement).open = true;
@@ -108,4 +106,3 @@ test('no WCAG A/AA violations in dark theme', async ({ page }) => {
   await scan(page, 'dark / default');
   await scanEveryTab(page, 'dark');
 });
-
