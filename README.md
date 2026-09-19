@@ -2,62 +2,93 @@
 
 ## What It Is
 
-This repository hosts a browser demo for ML-KEM (CRYSTALS-Kyber), including ML-KEM-512, ML-KEM-768, and ML-KEM-1024. The demo walks through key generation, encapsulation, and decapsulation, and also includes a hybrid path using HKDF-SHA256 and AES-256-GCM. ML-KEM solves the key-establishment problem by allowing two parties to derive a shared secret over an untrusted channel. The security model is post-quantum asymmetric cryptography (KEM), with symmetric authenticated encryption used for payload protection in the hybrid flow.
-
-It opens with a plain-language "What is a KEM?" on-ramp — encapsulation manufactures a random shared secret plus a ciphertext, and only the private-key holder can recover the same secret — before showing the real bytes. When decapsulation completes, Alice's and Bob's 32-byte secrets are laid out side by side, byte for byte, to make the KEM's core property visceral: the same secret appears on both ends although only the ciphertext crossed the wire. The lattice exhibit lets you run Gaussian elimination against the LWE system and watch it succeed with no noise and fail once the error term is added, and the NTT exhibit animates a single butterfly's `u ± ωv` so the O(n log n) reuse is something you see, not just read.
+This repository hosts a browser demo of final FIPS 203 ML-KEM, the NIST
+standard derived from CRYSTALS-Kyber. It runs ML-KEM-512, ML-KEM-768, and
+ML-KEM-1024 through key generation, encapsulation, and decapsulation. A
+teaching-only hybrid path derives a variant-bound AES-256-GCM key with
+HKDF-SHA256. ML-KEM establishes a key; it is not message encryption or peer
+authentication.
 
 ## Exhibits
 
-1. **What is a KEM? + Encaps / Decaps stepper** — a plain-language intro to key encapsulation, then a real ML-KEM-512/768/1024 run through KeyGen, Encaps, and Decaps with all artifacts and timings, culminating in a byte-by-byte side-by-side proof that both parties hold the identical shared secret without transmitting it.
-2. **Hybrid ML-KEM + AES-256-GCM** — chains the KEM shared secret through HKDF-SHA256 into an authenticated AES-256-GCM channel, with a tamper button that shows authentication failing.
-3. **Learning-With-Errors lattice** — emphasizes the noise vector `e`, contrasts `b = A·s` (clean) against `b = A·s + e` (published), and lets you run Gaussian elimination that recovers the secret without noise and returns garbage with it — the LWE hardness assumption, made observable.
-4. **NTT polynomial multiplication** — steps through one butterfly at a time as a dataflow diagram (twiddle factor on the edge, `u+ωv` / `u−ωv` outputs), then runs the full fast transform against a naive schoolbook reference and shows the two paths agree, with an honesty note on the cyclic-vs-negacyclic ring.
-5. **Parameter sets, benchmarks, and the "How LWE works" concept tour** — compares ML-KEM-512/768/1024 sizes and speeds against X25519/RSA, and unpacks the jargon (HKDF, IND-CCA2, FO transform, Module-LWE) with on-demand plain-English glosses.
+1. **Real ML-KEM stepper** — runs KeyGen, Encaps, and Decaps, displays the exact
+   artifact sizes, and proves byte-for-byte that both parties obtained the same
+   32-byte secret while only the ciphertext crossed the wire.
+2. **Hybrid ML-KEM + AES-256-GCM** — turns the KEM output into a contextualized
+   AES key and demonstrates authenticated decryption failure after tampering.
+3. **Scalar LWE primer** — uses a deliberately tiny 4×4, q=17 system to contrast
+   clean `b₀ = A·s` with published `b = A·s + e`. It is not ML-KEM's module
+   lattice.
+4. **Cyclic NTT primer** — animates an 8-point radix-2 butterfly and verifies
+   cyclic multiplication in `Z_3329[X]/(X^8-1)`. It is not FIPS 203's incomplete
+   negacyclic transform and base-case multiplication.
+5. **Parameters, wire costs, and reproducible benchmarks** — compares complete
+   construction-level key material, then records warm-up plus raw samples with
+   median/p95 summaries, environment metadata, and JSON/CSV export.
 
 ## When to Use It
 
-- Use ML-KEM when you need post-quantum key establishment for new systems, because it is standardized for that specific role.
-- Use the hybrid ML-KEM + AES-256-GCM path when you need to actually encrypt data after key establishment, because it demonstrates the full KEM-to-cipher pipeline.
-- Use this demo when comparing ML-KEM-512/768/1024 trade-offs, because it exposes parameter selection, artifact sizes, and benchmark behavior.
-- Do not use this repository as production cryptographic infrastructure, because it is an educational browser demo and not a hardened deployment.
+- Use the lab to learn or review FIPS 203 KEM flows, artifact sizes, parameter
+  trade-offs, and migration concepts.
+- Use its pinned vectors and source links as reproducible educational evidence.
+- Do not use this repository as production cryptographic infrastructure. It is
+  not independently audited, constant-time, peer-authenticated, or validated as
+  a FIPS cryptographic module.
 
 ## Live Demo
 
 **[systemslibrarian.github.io/crypto-lab-kyber-vault](https://systemslibrarian.github.io/crypto-lab-kyber-vault/)**
 
-You can run step-by-step KeyGen/Encaps/Decaps operations, inspect key and ciphertext artifacts, and view measured timings. The interface includes controls for parameter selection (ML-KEM-512, ML-KEM-768, ML-KEM-1024), benchmark iterations, and lattice/NTT educational panels.
+## Standards and Deployment Evidence
 
-## What Can Go Wrong
+Claims were last reviewed on **September 19, 2026**.
 
-- **Implementation timing leaks** — secret-dependent division (KyberSlash) has leaked ML-KEM key bits on some targets; the decapsulation path must be constant-time.
-- **FO-transform handling** — the implicit-rejection path of the Fujisaki-Okamoto transform must run in constant time, or decapsulation-failure behavior becomes an oracle.
-- **Randomness reuse** — reusing the randomness in encapsulation breaks the IND-CCA guarantee; each encapsulation needs fresh entropy.
-- **Parameter-set confusion** — mixing ML-KEM-512/768/1024 keys and ciphertexts yields silent failures or weaker-than-intended security.
-- **Using the raw shared secret directly** — the KEM output should be run through a KDF before use; the hybrid path here shows the correct KEM-to-AEAD pipeline.
+- [NIST FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) is the final ML-KEM
+  standard and carries a November 17, 2025 planning note linking potential
+  errata.
+- [OpenSSH 9.9](https://www.openssh.com/releasenotes.html#9.9) added
+  `mlkem768x25519-sha256`; OpenSSH 10.0 made it the default.
+- [Apple PQ3](https://security.apple.com/blog/imessage-pq3/) and
+  [Signal PQXDH](https://signal.org/docs/specifications/pqxdh/) document
+  Kyber-1024-era constructions. They show the pre-standard lineage, not that
+  those documented protocol versions use final FIPS 203 ML-KEM.
 
-## Real-World Usage
-
-- Standardized as **FIPS 203 (ML-KEM)** by NIST in 2024.
-- Deployed in **TLS 1.3** as the hybrid **X25519MLKEM768** group by Chrome, Cloudflare, and others.
-- Used in **Signal's PQXDH** and in **OpenSSH** hybrid key exchange.
-- Available in **liboqs / Open Quantum Safe** and **BoringSSL** for experimentation and production hybrids.
-
-## How to Run Locally
+## Run Locally
 
 ```bash
 git clone https://github.com/systemslibrarian/crypto-lab-kyber-vault
 cd crypto-lab-kyber-vault/demos/kyber-vault
-npm install
+npm ci
 npm run dev
 ```
 
+Useful gates:
+
+```bash
+npm run audit
+npm test
+npm run build
+npm run test:a11y
+npm run sbom
+```
+
+## Assurance
+
+- [Security policy](./SECURITY.md)
+- [Threat model](./THREAT-MODEL.md)
+- [Known limitations](./KNOWN-LIMITATIONS.md)
+- Pinned NIST ACVP conformance vectors, strict CSP/off-origin browser tests,
+  dependency audit and review, a generated CycloneDX SBOM, immutable Action
+  SHAs, axe WCAG checks, responsive/forced-colors/reduced-motion journeys, and
+  Lighthouse score budgets run in CI.
+
 ## Related Demos
 
-- [crypto-lab-kyberslash](https://systemslibrarian.github.io/crypto-lab-kyberslash/) — a timing side-channel against ML-KEM implementations.
-- [crypto-lab-hybrid-wire](https://systemslibrarian.github.io/crypto-lab-hybrid-wire/) — X25519 + ML-KEM-768 hybrid wire protocol.
-- [crypto-lab-pq-tls-handshake](https://systemslibrarian.github.io/crypto-lab-pq-tls-handshake/) — ML-KEM inside the TLS 1.3 handshake.
-- [crypto-lab-hqc-vault](https://systemslibrarian.github.io/crypto-lab-hqc-vault/) — a code-based post-quantum KEM for contrast.
-- [crypto-lab-mceliece-gate](https://systemslibrarian.github.io/crypto-lab-mceliece-gate/) — Classic McEliece, the conservative code-based KEM.
+- [crypto-lab-kyberslash](https://systemslibrarian.github.io/crypto-lab-kyberslash/)
+- [crypto-lab-hybrid-wire](https://systemslibrarian.github.io/crypto-lab-hybrid-wire/)
+- [crypto-lab-pq-tls-handshake](https://systemslibrarian.github.io/crypto-lab-pq-tls-handshake/)
+- [crypto-lab-hqc-vault](https://systemslibrarian.github.io/crypto-lab-hqc-vault/)
+- [crypto-lab-mceliece-gate](https://systemslibrarian.github.io/crypto-lab-mceliece-gate/)
 
 ## License
 
@@ -67,4 +98,5 @@ Released under the [MIT License](./LICENSE).
 
 *Part of the [Crypto Lab](https://crypto-lab.systemslibrarian.dev/) suite.*
 
-*"So whether you eat or drink or whatever you do, do it all for the glory of God." — 1 Corinthians 10:31*
+*“So whether you eat or drink or whatever you do, do it all for the glory of
+God.” — 1 Corinthians 10:31*

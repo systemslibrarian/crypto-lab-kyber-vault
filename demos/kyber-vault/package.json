@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:lighthouse": "vite build --base / --outDir lighthouse-dist",
     "audit": "npm audit --audit-level=moderate",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "deploy": "npm run build && gh-pages -d dist",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:a11y": "playwright test"
+    "test:a11y": "playwright test",
+    "sbom": "npm sbom --sbom-format cyclonedx"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

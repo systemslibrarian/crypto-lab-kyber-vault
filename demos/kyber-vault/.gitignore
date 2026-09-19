@@ -10,12 +10,16 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+lighthouse-dist
+lighthouse-results
+sbom.cdx.json
 *.local
 
 # Playwright
 /test-results/
 /playwright-report/
 /.pw-browsers/
+/.lighthouseci/
 
 # Editor directories and files
 .vscode/*
