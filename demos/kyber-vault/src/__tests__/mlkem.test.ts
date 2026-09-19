@@ -14,6 +14,35 @@ function toHex(bytes: Uint8Array): string {
 }
 
 describe('ML-KEM wrappers', () => {
+  it('pins the FIPS 203 algebra and compression parameters for every profile', () => {
+    expect(ML_KEM_PARAMS['ml-kem-512']).toMatchObject({
+      modulus: 3329,
+      polynomialDegree: 256,
+      moduleRank: 2,
+      eta1: 3,
+      eta2: 2,
+      du: 10,
+      dv: 4,
+    });
+    expect(ML_KEM_PARAMS['ml-kem-768']).toMatchObject({
+      modulus: 3329,
+      polynomialDegree: 256,
+      moduleRank: 3,
+      eta1: 2,
+      eta2: 2,
+      du: 10,
+      dv: 4,
+    });
+    expect(ML_KEM_PARAMS['ml-kem-1024']).toMatchObject({
+      modulus: 3329,
+      polynomialDegree: 256,
+      moduleRank: 4,
+      eta1: 2,
+      eta2: 2,
+      du: 11,
+      dv: 5,
+    });
+  });
   it('all variants round-trip and shared secret is 32 bytes', async () => {
     for (const variant of VARIANTS) {
       const bob = await generateKeyPair(variant);

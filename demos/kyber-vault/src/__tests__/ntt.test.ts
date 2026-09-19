@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   Q,
+  NTT_PRIMER_RING,
+  NTT_PRIMER_SIZE,
   ZETA,
   nttForward,
   nttInverse,
@@ -11,6 +13,10 @@ import {
 } from '../crypto/ntt';
 
 describe('NTT', () => {
+  it('labels the teaching transform as an 8-point cyclic primer', () => {
+    expect(NTT_PRIMER_SIZE).toBe(8);
+    expect(NTT_PRIMER_RING).toBe('Z_3329[X]/(X^8 - 1)');
+  });
   it('ζ = 17 is a primitive 256th root of unity mod 3329', () => {
     // ζ^256 ≡ 1 mod q
     let z = 1;

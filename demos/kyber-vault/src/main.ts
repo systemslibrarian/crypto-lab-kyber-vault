@@ -13,6 +13,7 @@ import {
 import { assertCryptographicRuntime, CRYPTO_IMPLEMENTATION } from './crypto/runtime';
 import {
   Q,
+  LWE_PRIMER_PARAMS,
   bruteForceSearchSpace,
   centeredRepresentative,
   cleanB,
@@ -23,6 +24,8 @@ import {
   verifyLWEWithQ,
 } from './crypto/lwe';
 import {
+  NTT_PRIMER_RING,
+  NTT_PRIMER_SIZE,
   type ButterflyOp,
   polyMultiplyNTT,
   polyMultiplySchoolbook,
@@ -40,10 +43,10 @@ const appRoot = app;
 assertCryptographicRuntime();
 
 const VARIANTS: MLKEMVariant[] = ['ml-kem-512', 'ml-kem-768', 'ml-kem-1024'];
-const ILLUSTRATIVE_Q = 17;
+const ILLUSTRATIVE_Q = LWE_PRIMER_PARAMS.q;
 // Square (n=m) so the noiseless system has a unique solution Gaussian
 // elimination can recover — the contrast that teaches LWE hardness.
-const LWE_DIM = 4;
+const LWE_DIM = LWE_PRIMER_PARAMS.n;
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'encaps', label: 'Encapsulate / Decapsulate' },
@@ -108,8 +111,8 @@ const state: {
   lwe: generateIllustrativeLWEInstance(4, 4, ILLUSTRATIVE_Q),
   latticeMessage: 'Educational instance uses q=17. Core ML-KEM uses q=3329.',
   latticeSolve: null,
-  nttA: randomSmallPoly(8),
-  nttB: randomSmallPoly(8),
+  nttA: randomSmallPoly(NTT_PRIMER_SIZE),
+  nttB: randomSmallPoly(NTT_PRIMER_SIZE),
   nttResult: null,
   nttSchoolbook: null,
   nttButterflyStep: 0,
@@ -453,7 +456,7 @@ function render(): void {
       <div class="card">
         <h2>Full hybrid encryption (ML-KEM + AES-256-GCM)</h2>
         <p class="intro-note"><strong>Hybrid</strong> here means the KEM establishes a shared secret, then a fast symmetric cipher (AES-256-GCM) uses that secret to actually encrypt your message — a KEM alone only agrees a key, it does not encrypt data.</p>
-        <p>Flow: Encaps -> <abbr title="HMAC-based Key Derivation Function (RFC 5869): stretches and cleans up the raw KEM secret into a uniform AES key. Never use the raw shared secret directly.">HKDF-SHA256</abbr>(salt=kyber-vault-v1) -> AES-256-GCM encrypt/decrypt.</p>
+        <p>Flow: Encaps -> <abbr title="HMAC-based Key Derivation Function (RFC 5869): derives a variant-bound AES key and gives this demo an explicit key schedule.">HKDF-SHA256</abbr>(salt=kyber-vault-v1) -> AES-256-GCM encrypt/decrypt.</p>
         <label for="hybrid-message" class="sr-only">Message to encrypt</label>
         <textarea id="hybrid-message" rows="4" placeholder="Enter a message to encrypt" aria-label="Message to encrypt"></textarea>
         <div class="controls">
@@ -473,9 +476,28 @@ function render(): void {
     </section>
 
     <section class="panel ${state.activeTab === 'lattice' ? 'visible' : ''}" id="panel-lattice" role="tabpanel" aria-labelledby="tab-lattice" ${state.activeTab !== 'lattice' ? 'hidden' : ''}>
+      <div class="card model-boundary" aria-labelledby="model-boundary-heading">
+        <p class="parameter-kicker">Model boundary</p>
+        <h2 id="model-boundary-heading">Two primers, one real implementation</h2>
+        <p>The KeyGen/Encaps/Decaps tab runs real FIPS 203 ML-KEM. The visualizations on this tab are deliberately tiny concept models; they do not execute ML-KEM's internal algorithms.</p>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Toy visualization and real ML-KEM parameter comparison">
+          <table class="boundary-table">
+            <thead><tr><th scope="col">Property</th><th scope="col">Scalar LWE primer</th><th scope="col">Cyclic NTT primer</th><th scope="col">Real FIPS 203 ML-KEM</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Algebra</th><td>Plain scalar equations A·s+e</td><td>${NTT_PRIMER_RING}</td><td>Module-LWE over Z<sub>3329</sub>[X]/(X<sup>256</sup>+1)</td></tr>
+              <tr><th scope="row">Modulus q</th><td>${LWE_PRIMER_PARAMS.q}</td><td>${Q}</td><td>3329</td></tr>
+              <tr><th scope="row">Dimension</th><td>${LWE_PRIMER_PARAMS.m}×${LWE_PRIMER_PARAMS.n} scalar matrix</td><td>${NTT_PRIMER_SIZE} coefficients</td><td>256 coefficients per polynomial</td></tr>
+              <tr><th scope="row">Module rank k</th><td>Not applicable</td><td>Not applicable</td><td>2 / 3 / 4 for ML-KEM-512 / 768 / 1024</td></tr>
+              <tr><th scope="row">Sampling</th><td>s,e use CBD η=${LWE_PRIMER_PARAMS.eta}</td><td>Display coefficients sampled from −4…4</td><td>CBD η<sub>1</sub>=3/2/2 and η<sub>2</sub>=2</td></tr>
+              <tr><th scope="row">Random source</th><td><code>Math.random</code> for visualization only</td><td><code>Math.random</code> for visualization only</td><td>Browser <code>crypto.getRandomValues</code> in this implementation</td></tr>
+              <tr><th scope="row">Purpose</th><td>Show why noise breaks exact solving</td><td>Show radix-2 butterflies and cyclic convolution</td><td>Actual standardized key encapsulation</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       <div class="card">
         <h2>Learning With Errors: the noise is the whole point</h2>
-        <p>The hardness of ML-KEM comes from one small vector. Solve <strong>A·s = b</strong> and you break it — but you are never given the clean <strong>b</strong>. You are given <strong>b = A·s + e</strong>, corrupted by tiny noise <strong>e</strong>. This panel makes that gap visible.</p>
+        <p>At an intuition level, ML-KEM relies on Module-LWE: structured polynomial equations hide a small secret behind noise. This scalar primer strips away the module and polynomial structure to show one idea only: exact linear algebra recovers s from <strong>b₀ = A·s</strong>, but the published <strong>b = A·s + e</strong> includes tiny noise <strong>e</strong>.</p>
         <p class="muted">Core ML-KEM modulus is q=${Q}; this panel uses q=${ILLUSTRATIVE_Q} and a ${LWE_DIM}×${LWE_DIM} system for readability only.</p>
 
         <h3>Public matrix A <span class="muted">(uniform random — no structure to see)</span></h3>
@@ -495,8 +517,8 @@ function render(): void {
         <h3>Try to solve it by Gaussian elimination</h3>
         <p>Exact linear algebra over Z<sub>${ILLUSTRATIVE_Q}</sub> can invert A and recover s <em>if</em> the right-hand side is clean. Add the noise and the very same procedure returns garbage.</p>
         <div class="controls">
-          <button id="solve-clean">Solve A·s = b (no noise)</button>
-          <button id="solve-noisy">Solve A·s = b+e (with noise)</button>
+          <button id="solve-clean">Solve A·s = b₀ (clean)</button>
+          <button id="solve-noisy">Solve A·s = b (published noisy)</button>
         </div>
         ${
           state.latticeSolve
@@ -513,7 +535,7 @@ function render(): void {
                       : `Recovered "s" = [${state.latticeSolve.result.recovered!.map((value) => centeredRepresentative(value, ILLUSTRATIVE_Q)).join(', ')}] (centered representatives). ${
                           state.latticeSolve.result.correct
                             ? '(This draw happened to survive — try a new instance.)'
-                            : `The true secret was [${state.lwe.s.join(', ')}]. The noise defeated the elimination — this gap is the LWE hardness assumption.`
+                            : `The true secret was [${state.lwe.s.join(', ')}]. Exact elimination no longer recovers it; this illustrates the intuition behind LWE, not a security proof.`
                         }`
                 }
               </div>`
@@ -528,9 +550,10 @@ function render(): void {
       </div>
 
       <div class="card">
-        <h2>NTT polynomial multiplication</h2>
-        <p>Kyber multiplies polynomials in Z<sub>${Q}</sub>[X]/(X<sup>256</sup>+1) using the <strong>Number Theoretic Transform</strong> — an FFT over a finite field.</p>
-        <p>This demo uses n=8 coefficients (mod ${Q}) so the butterfly structure is visible. Full Kyber uses n=256.</p>
+        <p class="standard-status standard-status-legacy">Concept primer · not ML-KEM's transform</p>
+        <h2>Cyclic NTT polynomial multiplication</h2>
+        <p>This panel computes an ${NTT_PRIMER_SIZE}-point radix-2 transform and cyclic convolution in ${NTT_PRIMER_RING}. It uses ML-KEM's modulus q=${Q} and a root derived from ζ=17 only to make the arithmetic recognizable.</p>
+        <p class="honesty-note"><strong>Boundary:</strong> FIPS 203 uses a specialized incomplete transform for the negacyclic ring Z<sub>3329</sub>[X]/(X<sup>256</sup>+1), with 128 coefficient pairs and base-case polynomial multiplication. This primer's full transform plus scalar pointwise products is not Algorithms 9–11 of FIPS 203.</p>
         <div class="grid-two">
           <div>
             <h3>a(x)</h3>
@@ -542,7 +565,7 @@ function render(): void {
           </div>
         </div>
         <div class="controls controls-spaced">
-          <button id="ntt-run">Run NTT multiply</button>
+          <button id="ntt-run">Run cyclic NTT primer</button>
           <button id="ntt-new">New random polynomials</button>
         </div>
         ${state.nttResult ? `
@@ -587,7 +610,7 @@ function render(): void {
           — ${state.nttSchoolbook && state.nttResult.result.every((v, i) => v === state.nttSchoolbook![i]) ? 'Results match (NTT = schoolbook)' : 'Mismatch'}
         </div>
         <p>NTT uses <strong>${state.nttResult.butterfliesA.length}</strong> butterfly ops per polynomial (O(n log n)) vs <strong>${state.nttA.length * state.nttA.length}</strong> multiplications for schoolbook (O(n²)).</p>
-        <p class="honesty-note"><strong>Honest caveat:</strong> the schoolbook check here multiplies in the <em>cyclic</em> ring X<sup>n</sup>−1 to match this standard radix-2 NTT, whereas Kyber's real ring is <em>negacyclic</em>, X<sup>256</sup>+1 (which needs a twist by 512th roots of unity). So this "NTT = schoolbook" match proves the transform machinery is correct — it is not the exact Kyber multiply.</p>
+        <p class="honesty-note"><strong>What the match proves:</strong> this cyclic transform agrees with schoolbook multiplication in X<sup>${NTT_PRIMER_SIZE}</sup>−1. It does not validate ML-KEM's incomplete negacyclic NTT or its base-case multiplication.</p>
         ` : ''}
       </div>
     </section>
@@ -984,7 +1007,11 @@ function render(): void {
   const bruteForceButton = appRoot.querySelector<HTMLButtonElement>('#bruteforce');
   if (bruteForceButton) {
     bruteForceButton.addEventListener('click', () => {
-      state.latticeMessage = bruteForceSearchSpace(LWE_DIM, ILLUSTRATIVE_Q);
+      state.latticeMessage = bruteForceSearchSpace(
+        LWE_DIM,
+        ILLUSTRATIVE_Q,
+        LWE_PRIMER_PARAMS.eta,
+      );
       render();
     });
   }
@@ -1002,8 +1029,8 @@ function render(): void {
   const nttNewButton = appRoot.querySelector<HTMLButtonElement>('#ntt-new');
   if (nttNewButton) {
     nttNewButton.addEventListener('click', () => {
-      state.nttA = randomSmallPoly(8);
-      state.nttB = randomSmallPoly(8);
+      state.nttA = randomSmallPoly(NTT_PRIMER_SIZE);
+      state.nttB = randomSmallPoly(NTT_PRIMER_SIZE);
       state.nttResult = null;
       state.nttSchoolbook = null;
       state.nttButterflyStep = 0;

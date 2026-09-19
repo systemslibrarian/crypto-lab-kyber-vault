@@ -19,6 +19,13 @@ export interface MLKEMEncapsResult {
 
 export const ML_KEM_PARAMS = {
   'ml-kem-512': {
+    modulus: 3329,
+    polynomialDegree: 256,
+    moduleRank: 2,
+    eta1: 3,
+    eta2: 2,
+    du: 10,
+    dv: 4,
     publicKey: 800,
     privateKey: 1632,
     ciphertext: 768,
@@ -31,6 +38,13 @@ export const ML_KEM_PARAMS = {
       'It has the smallest artifacts, but less security margin than ML-KEM-768 and ML-KEM-1024.',
   },
   'ml-kem-768': {
+    modulus: 3329,
+    polynomialDegree: 256,
+    moduleRank: 3,
+    eta1: 2,
+    eta2: 2,
+    du: 10,
+    dv: 4,
     publicKey: 1184,
     privateKey: 2400,
     ciphertext: 1088,
@@ -43,6 +57,13 @@ export const ML_KEM_PARAMS = {
       'It costs more bandwidth than ML-KEM-512 while remaining smaller than the category-5 profile.',
   },
   'ml-kem-1024': {
+    modulus: 3329,
+    polynomialDegree: 256,
+    moduleRank: 4,
+    eta1: 2,
+    eta2: 2,
+    du: 11,
+    dv: 5,
     publicKey: 1568,
     privateKey: 3168,
     ciphertext: 1568,

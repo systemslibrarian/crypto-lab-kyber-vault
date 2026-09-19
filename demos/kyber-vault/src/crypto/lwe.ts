@@ -2,6 +2,12 @@
 // https://csrc.nist.gov/pubs/fips/203/final
 
 export const Q = 3329;
+export const LWE_PRIMER_PARAMS = Object.freeze({
+  q: 17,
+  n: 4,
+  m: 4,
+  eta: 2,
+});
 
 export interface LWEInstance {
   A: number[][];
@@ -162,12 +168,13 @@ function formatBigInt(value: bigint): string {
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-export function bruteForceSearchSpace(n: number, q = Q): string {
+export function bruteForceSearchSpace(n: number, q = Q, eta = 2): string {
   if (n <= 0 || q <= 1) {
     throw new Error('n must be positive and q must be greater than one');
   }
-  const space = BigInt(q) ** BigInt(n);
-  return `For this displayed n=${n}, q=${q} toy, exhaustive coefficient search is q^n = ${formatBigInt(space)} candidates. This deliberately small teaching instance is searchable; it is not an ML-KEM security estimate.`;
+  const fieldSpace = BigInt(q) ** BigInt(n);
+  const secretSupport = BigInt(2 * eta + 1) ** BigInt(n);
+  return `For this displayed n=${n}, q=${q} toy, naive full-field search is q^n = ${formatBigInt(fieldSpace)} candidates. Because this toy samples each secret coordinate from CBD eta=${eta}, its support is only [-${eta}, ${eta}]^${n}: at most ${formatBigInt(secretSupport)} vectors, with a non-uniform distribution. This deliberately tiny teaching instance is searchable; neither number is an ML-KEM security estimate.`;
 }
 
 export function generateIllustrativeLWEInstance(n: number, m: number, q: number): LWEInstance {

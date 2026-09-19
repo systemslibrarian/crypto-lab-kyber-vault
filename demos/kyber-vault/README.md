@@ -17,6 +17,12 @@ Live demo: [https://systemslibrarian.github.io/crypto-lab-kyber-vault/](https://
 
 In the demo, you can step through KeyGen, Encaps, and Decaps, inspect artifacts and timings, and run a hybrid encrypt/decrypt flow. You can switch between ML-KEM-512, ML-KEM-768, and ML-KEM-1024, see decision guidance and exact FIPS 203 artifact sizes for each profile, generate illustrative LWE/NTT examples, and run benchmark iterations for ML-KEM and X25519 comparison. The interface explicitly treats NIST categories as comparison targets rather than exact classical or quantum bit-strength measurements.
 
+The cryptographic flow and the visual primers have a deliberate boundary:
+
+- KeyGen, Encaps, and Decaps call the real FIPS 203 implementation and are checked against pinned NIST ACVP vectors.
+- The scalar LWE primer uses a 4×4 matrix over q=17 with CBD η=2 so learners can see why noise defeats exact linear algebra. It is not ML-KEM's module lattice.
+- The NTT primer performs an 8-point cyclic transform in `Z_3329[X]/(X^8-1)`. FIPS 203 instead uses a specialized incomplete transform for the negacyclic ring `Z_3329[X]/(X^256+1)`, including base-case multiplication of coefficient pairs. The primer is not an implementation of FIPS 203 Algorithms 9–11.
+
 ## 4. How to Run Locally
 
 ```bash

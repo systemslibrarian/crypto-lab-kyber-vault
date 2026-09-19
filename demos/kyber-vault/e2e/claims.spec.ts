@@ -20,7 +20,7 @@ test('LWE results use centered representatives and the displayed toy parameters'
   const status = page.locator('#panel-lattice .status');
   await expect(status).toContainText('n=4, q=17');
   await expect(status).toContainText('83,521 candidates');
-  await expect(status).toContainText('not an ML-KEM security estimate');
+  await expect(status).toContainText('neither number is an ML-KEM security estimate');
   await expect(status).not.toContainText('q=3329');
 });
 
