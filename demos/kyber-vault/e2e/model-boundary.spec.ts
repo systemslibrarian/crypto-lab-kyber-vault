@@ -6,7 +6,8 @@ test('toy models are explicitly separated from the real FIPS 203 implementation'
 
   const boundary = page.locator('.model-boundary');
   await expect(boundary).toContainText('Two primers, one real implementation');
-  await expect(boundary).toContainText('q 17 3329 3329');
+  const modulusRow = boundary.locator('tr').filter({ hasText: 'Modulus q' });
+  await expect(modulusRow.locator('td')).toHaveText(['17', '3329', '3329']);
   await expect(boundary).toContainText('4×4 scalar matrix');
   await expect(boundary).toContainText('8 coefficients');
   await expect(boundary).toContainText('256 coefficients per polynomial');
