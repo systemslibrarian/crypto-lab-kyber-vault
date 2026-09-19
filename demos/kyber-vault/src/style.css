@@ -546,7 +546,8 @@ textarea:focus-visible,
 }
 
 .provenance-card a,
-.source-status a {
+.source-status a,
+.implementation-card a {
   color: var(--accent);
   text-underline-offset: 0.18em;
 }
@@ -565,6 +566,66 @@ textarea:focus-visible,
 
 .source-list li + li {
   margin-top: 0.45rem;
+}
+
+.implementation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+.implementation-grid > div {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.8rem;
+  background: color-mix(in srgb, var(--bg2) 72%, transparent);
+}
+
+.implementation-grid dt {
+  margin-bottom: 0.35rem;
+  color: var(--ink0);
+  font: 700 0.78rem/1.35 var(--mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.implementation-grid dd {
+  margin: 0;
+}
+
+.assurance-limits {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.assurance-limits p {
+  margin: 0;
+  border-left: 3px solid var(--warn);
+  padding: 0.55rem 0.7rem;
+  background: color-mix(in srgb, var(--warn) 7%, transparent);
+}
+
+.integrity-receipt {
+  margin-top: 0.9rem;
+}
+
+.integrity-receipt summary {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.integrity-receipt code {
+  overflow-wrap: anywhere;
+}
+
+.production-warning {
+  margin-bottom: 0;
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  padding: 0.75rem;
+  color: var(--ink0);
 }
 
 .clickable {
@@ -1262,6 +1323,7 @@ abbr[title] {
   .grid-two,
   .grid-three,
   .deployment-grid,
+  .implementation-grid,
   .ntt-result-grid {
     grid-template-columns: 1fr;
   }

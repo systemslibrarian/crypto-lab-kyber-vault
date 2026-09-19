@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { lockedImplementation } from './locked-implementation.ts';
 
 function normalizeBasePath(basePath: string): string {
   const trimmed = basePath.trim();
@@ -14,5 +15,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: normalizeBasePath(configuredBase ?? fallbackBase),
+    define: {
+      __NOBLE_POST_QUANTUM_VERSION__: JSON.stringify(lockedImplementation.version),
+      __NOBLE_POST_QUANTUM_INTEGRITY__: JSON.stringify(lockedImplementation.integrity),
+    },
   };
 });

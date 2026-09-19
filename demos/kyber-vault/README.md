@@ -33,6 +33,20 @@ inline scripts or styles, and makes no third-party runtime requests. A
 Playwright security gate fails on CSP violations, browser errors, or any
 off-origin request.
 
+The ML-KEM implementation is exactly pinned to `@noble/post-quantum@0.7.1`;
+the production UI derives both that version and its npm integrity receipt from
+`package-lock.json` at build time. ML-KEM runs as pure JavaScript, while
+HKDF-SHA256, AES-256-GCM, SHA-256, and cryptographic randomness use browser Web
+Crypto. The app fails closed if `crypto.getRandomValues` or `crypto.subtle` is
+unavailable.
+
+This runtime has important limitations: the upstream project reports a
+self-audit at 0.6.1, not an independent audit; it makes no constant-time claim
+for JavaScript execution; and a garbage-collected browser cannot guarantee
+complete erasure of secret copies. The interface exposes these limits next to
+the implementation details. Use a reviewed, supported, side-channel-hardened
+implementation and an authenticated protocol for production systems.
+
 ## 5. Cryptographic Conformance Evidence
 
 The test suite pins a compact subset of the NIST ACVP-Server FIPS 203 vectors

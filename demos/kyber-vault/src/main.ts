@@ -10,6 +10,7 @@ import {
   type MLKEMKeyPair,
   type MLKEMVariant,
 } from './crypto/mlkem';
+import { assertCryptographicRuntime, CRYPTO_IMPLEMENTATION } from './crypto/runtime';
 import {
   Q,
   bruteForceSearchSpace,
@@ -35,6 +36,8 @@ if (!app) {
   throw new Error('App root not found');
 }
 const appRoot = app;
+
+assertCryptographicRuntime();
 
 const VARIANTS: MLKEMVariant[] = ['ml-kem-512', 'ml-kem-768', 'ml-kem-1024'];
 const ILLUSTRATIVE_Q = 17;
@@ -646,6 +649,40 @@ function render(): void {
           <li><a href="https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html" target="_blank" rel="noopener noreferrer">NIST ACVP ML-KEM test specification</a></li>
         </ul>
       </div>
+      <div class="card implementation-card" aria-labelledby="implementation-heading">
+        <p class="parameter-kicker">Runtime disclosure</p>
+        <h3 id="implementation-heading">What exactly runs here</h3>
+        <dl class="implementation-grid">
+          <div>
+            <dt>ML-KEM library</dt>
+            <dd><a href="https://github.com/paulmillr/noble-post-quantum" target="_blank" rel="noopener noreferrer"><code>${CRYPTO_IMPLEMENTATION.library}@${CRYPTO_IMPLEMENTATION.version}</code></a>, exactly pinned by the lockfile</dd>
+          </div>
+          <div>
+            <dt>Execution backend</dt>
+            <dd>${CRYPTO_IMPLEMENTATION.backend}</dd>
+          </div>
+          <div>
+            <dt>Entropy</dt>
+            <dd>Key generation, encapsulation, and IV creation use the browser CSPRNG through <code>crypto.getRandomValues</code>. The app fails closed when Web Crypto is unavailable.</dd>
+          </div>
+          <div>
+            <dt>Network boundary</dt>
+            <dd>Cryptographic operations happen locally. CSP <code>connect-src 'none'</code> blocks runtime network requests; generated keys remain in this page's JavaScript memory.</dd>
+          </div>
+        </dl>
+        <div class="assurance-limits" aria-label="Implementation assurance limits">
+          <p><strong>No independent audit:</strong> upstream reports a self-audit at version 0.6.1 in April 2026, not an independent audit. This site ships 0.7.1, which includes later changes.</p>
+          <p><strong>No constant-time claim:</strong> JavaScript engines, JIT compilation, garbage collection, and browser scheduling prevent a formal constant-time guarantee.</p>
+          <p><strong>No guaranteed secret erasure:</strong> upstream wipes selected temporary arrays, but this demo retains working keys in application state and cannot guarantee removal of copies from a garbage-collected browser heap.</p>
+          <p><strong>No peer authentication:</strong> this teaching flow does not authenticate Bob's public key or Alice's identity. A real protocol must bind keys to identities to prevent active key-substitution attacks.</p>
+          <p><strong>No certification:</strong> pinned NIST vectors demonstrate tested behavior; they do not make the library, browser, or demo a FIPS-validated cryptographic module.</p>
+        </div>
+        <details class="integrity-receipt">
+          <summary>Show the locked npm artifact receipt</summary>
+          <p><code>${CRYPTO_IMPLEMENTATION.integrity}</code></p>
+        </details>
+        <p class="production-warning"><strong>Educational use only:</strong> use a reviewed, supported, side-channel-hardened implementation and an authenticated protocol design for production systems.</p>
+      </div>
     </section>
 
     <section class="panel ${state.activeTab === 'compare' ? 'visible' : ''}" id="panel-compare" role="tabpanel" aria-labelledby="tab-compare" ${state.activeTab !== 'compare' ? 'hidden' : ''}>
@@ -736,7 +773,7 @@ function render(): void {
 
         <h3>Jargon, unpacked</h3>
         <div class="glossary">
-          <details><summary>HKDF-SHA256</summary><p>HMAC-based Key Derivation Function (RFC 5869). The raw KEM shared secret is not a uniform key, so HKDF "extracts" its entropy and "expands" it into exactly the AES-256 key bytes you need. Feeding the raw secret straight into a cipher is a real-world footgun; HKDF is the fix.</p></details>
+          <details><summary>HKDF-SHA256</summary><p>HMAC-based Key Derivation Function (RFC 5869). ML-KEM already outputs 32 bytes of shared secret; this demo runs it through HKDF to give the AES key an explicit, variant-bound context and a clear key schedule. That is protocol domain separation, not a claim that ML-KEM's output lacks uniformity.</p></details>
           <details><summary>IND-CCA2</summary><p>Indistinguishability under adaptive Chosen-Ciphertext Attack — the gold-standard security goal. It means that even an attacker allowed to submit crafted ciphertexts to a decryption oracle learns nothing about a target message. ML-KEM targets this level; the FO transform is how it gets there.</p></details>
           <details><summary>Fujisaki-Okamoto (FO) transform</summary><p>A generic recipe that turns a merely-passively-secure public-key encryption scheme into an actively-secure KEM by making decapsulation re-encrypt and verify. If verification fails it returns a pseudorandom secret ("implicit rejection") instead of an error, so failures leak nothing.</p></details>
           <details><summary>Module-LWE</summary><p>The specific hardness assumption Kyber rests on: LWE where the entries are small polynomials in a ring, arranged in a low-dimensional module. It sits between plain LWE (very conservative, big keys) and Ring-LWE (compact, more structure), trading a little structure for much smaller keys.</p></details>
