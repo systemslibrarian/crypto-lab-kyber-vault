@@ -24,10 +24,20 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - name: Reject newly introduced vulnerable dependencies
-        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          fail-on-severity: moderate
+          node-version: 22.23.2
+          cache: npm
+          cache-dependency-path: demos/kyber-vault/package-lock.json
+      # The hosted dependency-review API requires the repository dependency
+      # graph to be enabled. Audit the complete proposed lockfile instead, so
+      # this remains a mandatory fail-closed PR gate on every repository tier.
+      - name: Install proposed dependency graph without lifecycle scripts
+        working-directory: demos/kyber-vault
+        run: npm ci --ignore-scripts
+      - name: Reject moderate-or-higher vulnerabilities
+        working-directory: demos/kyber-vault
+        run: npm audit --audit-level=moderate
 
   build:
     runs-on: ubuntu-24.04

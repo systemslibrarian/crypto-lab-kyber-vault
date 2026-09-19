@@ -452,6 +452,7 @@ textarea:focus-visible,
 .panel {
   display: none;
   gap: 0.95rem;
+  min-width: 0;
 }
 
 .panel.visible {
@@ -465,6 +466,7 @@ textarea:focus-visible,
   background: rgba(12, 20, 31, 0.88);
   padding: 1rem 1.1rem;
   box-shadow: var(--shadow);
+  min-width: 0;
 }
 
 .grid-two {
@@ -569,7 +571,9 @@ textarea:focus-visible,
 }
 
 .table-scroll {
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   border-radius: 10px;
 }
