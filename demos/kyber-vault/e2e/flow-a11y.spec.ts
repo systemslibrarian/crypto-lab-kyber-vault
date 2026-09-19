@@ -15,10 +15,8 @@ import { expect, test, type Page } from '@playwright/test';
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 async function prepare(page: Page): Promise<void> {
-  await page.addStyleTag({
-    content: `*,*::before,*::after{animation:none!important;transition:none!important;}
-      .panel,.card,.shell{opacity:1!important;}`,
-  });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForTimeout(50);
   await page.evaluate(() => {
     for (const details of Array.from(document.querySelectorAll('details'))) {
       (details as HTMLDetailsElement).open = true;
@@ -69,4 +67,3 @@ test('no WCAG A/AA violations across dynamic states (dark)', async ({ page }) =>
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await driveAndScan(page, 'dark');
 });
-
