@@ -452,6 +452,7 @@ textarea:focus-visible,
 .panel {
   display: none;
   gap: 0.95rem;
+  min-width: 0;
 }
 
 .panel.visible {
@@ -465,6 +466,7 @@ textarea:focus-visible,
   background: rgba(12, 20, 31, 0.88);
   padding: 1rem 1.1rem;
   box-shadow: var(--shadow);
+  min-width: 0;
 }
 
 .grid-two {
@@ -569,7 +571,9 @@ textarea:focus-visible,
 }
 
 .table-scroll {
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   border-radius: 10px;
 }
@@ -1513,6 +1517,21 @@ abbr[title] {
   color: var(--ink2);
 }
 
+.footer-assurance {
+  font-family: var(--sans);
+  font-style: normal;
+}
+
+.footer-assurance a,
+.footer-related a {
+  color: var(--accent);
+  text-underline-offset: 0.18em;
+}
+
+.footer-scripture {
+  margin-bottom: 0;
+}
+
 /* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1521,5 +1540,45 @@ abbr[title] {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Preserve distinct state and focus cues when the operating system replaces
+   author colors with a forced high-contrast palette. */
+@media (forced-colors: active) {
+  .card,
+  .step,
+  .deployment-example,
+  .implementation-grid > div,
+  textarea,
+  table,
+  th,
+  td {
+    border-color: CanvasText;
+  }
+
+  .tab.active,
+  .pill.active,
+  .selected-parameter,
+  .standard-status,
+  .match,
+  .solve-result {
+    border: 2px solid Highlight;
+  }
+
+  button:focus-visible,
+  .tab:focus-visible,
+  .pill:focus-visible,
+  textarea:focus-visible,
+  .clickable:focus-visible,
+  a:focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 3px;
+  }
+
+  .bar,
+  .noise-cell,
+  .cell {
+    forced-color-adjust: auto;
   }
 }

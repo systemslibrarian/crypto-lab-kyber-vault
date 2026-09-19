@@ -99,6 +99,22 @@ Sources and claims were last reviewed on **September 19, 2026**.
 
 Final ML-KEM and pre-standard CRYSTALS-Kyber must not be treated as interchangeable. Algorithm details changed during standardization, so implementations must not assume byte-compatible keys, ciphertexts, or protocol encodings.
 
-## 8. Part of the Crypto-Lab Suite
+## 8. Project Assurance
+
+The repository documents its [security policy](../../SECURITY.md),
+[threat model](../../THREAT-MODEL.md), and
+[known limitations](../../KNOWN-LIMITATIONS.md). CI uses immutable Action SHAs,
+rejects newly introduced dependencies with moderate-or-higher known
+vulnerabilities, preserves a CycloneDX SBOM artifact, and enforces unit,
+conformance, build, CSP, browser, WCAG, responsive, forced-colors,
+reduced-motion, and Lighthouse quality gates.
+
+Generate the current dependency inventory locally with:
+
+```bash
+npm run sbom
+```
+
+## 9. Part of the Crypto-Lab Suite
 
 This demo is part of the broader Crypto-Lab collection at https://systemslibrarian.github.io/crypto-lab/.
