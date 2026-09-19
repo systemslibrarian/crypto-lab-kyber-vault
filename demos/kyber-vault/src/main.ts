@@ -414,7 +414,7 @@ function render(): void {
             return `<div class="step ${status}" role="listitem"${ariaCurrent}>${step}</div>`;
           })
           .join('')}</div>
-        <p class="status" role="status" aria-live="polite">${escapeHtml(state.status)}</p>
+        <p id="kem-status" class="status" role="status" aria-live="polite">${escapeHtml(state.status)}</p>
         <div class="controls">
           <button id="prev-step" ${state.step === 1 ? 'disabled' : ''}>Prev</button>
           <button id="next-step">${state.step === 4 ? 'Run again' : 'Next'}</button>

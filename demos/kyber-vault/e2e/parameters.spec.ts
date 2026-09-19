@@ -19,11 +19,11 @@ test('every selector runs the matching real FIPS 203 profile end to end', async 
     await expect(choice).toContainText(`Ciphertext ${profile.ciphertext} B`);
 
     await page.locator('#next-step').click();
-    await expect(page.locator('#panel-encaps .status')).toContainText(
+    await expect(page.locator('#kem-status')).toContainText(
       `KeyGen complete (${profile.publicKey}B public`,
     );
     await page.locator('#next-step').click();
-    await expect(page.locator('#panel-encaps .status')).toContainText(
+    await expect(page.locator('#kem-status')).toContainText(
       `Encaps complete (${profile.ciphertext}B ciphertext)`,
     );
     await page.locator('#next-step').click();
