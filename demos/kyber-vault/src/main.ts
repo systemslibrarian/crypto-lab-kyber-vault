@@ -340,7 +340,7 @@ function render(): void {
     <header class="cl-hero" role="group">
       <div class="cl-hero-main">
         <h1 class="cl-hero-title">ML-KEM</h1>
-        <p class="cl-hero-sub">CRYSTALS-Kyber · FIPS 203</p>
+        <p class="cl-hero-sub">ML-KEM · Final FIPS 203 standard</p>
         <p class="cl-hero-desc">Steps through KeyGen, Encaps, and Decaps on real ML-KEM, then chains the shared secret into an AES-256-GCM hybrid while visualizing the Learning-With-Errors lattice and the NTT behind fast polynomial math.</p>
       </div>
       <aside class="cl-hero-why" aria-label="Why it matters">
@@ -609,11 +609,42 @@ function render(): void {
         <h3>Category is a requirement, not a scoreboard</h3>
         <p>FIPS 203 assigns categories 1, 3, and 5 as standardized comparison targets. They are not exact bit-strength claims. A higher category increases keys and ciphertexts, so select the smallest profile that satisfies the protocol, data lifetime, and compliance requirement.</p>
       </div>
-      <div class="card">
-        <h3>Where ML-KEM / Kyber is deployed today</h3>
-        <p><strong>ML-KEM-768</strong> (hybrid with X25519): Chrome &amp; Google services, Cloudflare, AWS, OpenSSH 9.9+.</p>
-        <p><strong>Kyber-1024</strong> (category 5): Apple iMessage PQ3, Signal PQXDH.</p>
-        <p class="muted">Most TLS/SSH deployments pair the KEM with X25519 so a break in either primitive alone is not fatal.</p>
+      <div class="card provenance-card">
+        <div class="provenance-heading">
+          <div>
+            <p class="parameter-kicker">Primary-source evidence</p>
+            <h3>Deployment examples: final ML-KEM vs earlier Kyber</h3>
+          </div>
+          <p class="review-date"><strong>Last reviewed</strong><time datetime="2026-09-19">September 19, 2026</time></p>
+        </div>
+        <div class="deployment-grid">
+          <section class="deployment-example">
+            <p class="standard-status standard-status-final">Final standard</p>
+            <h4>ML-KEM (FIPS 203)</h4>
+            <p><a href="https://www.openssh.com/releasenotes.html#9.9" target="_blank" rel="noopener noreferrer">OpenSSH 9.9 release notes</a> document the hybrid <code>mlkem768x25519-sha256</code> key exchange, combining FIPS 203 ML-KEM with X25519. OpenSSH 10.0 made it the default.</p>
+          </section>
+          <section class="deployment-example">
+            <p class="standard-status standard-status-legacy">Pre-standard lineage</p>
+            <h4>CRYSTALS-Kyber variants</h4>
+            <p><a href="https://security.apple.com/blog/imessage-pq3/" target="_blank" rel="noopener noreferrer">Apple's PQ3 design</a> specifies Kyber-1024, while the <a href="https://signal.org/docs/specifications/pqxdh/" target="_blank" rel="noopener noreferrer">Signal PQXDH specification</a> gives CRYSTALS-KYBER-1024 as its concrete example.</p>
+          </section>
+        </div>
+        <p class="honesty-note"><strong>Names are not interchangeable:</strong> final FIPS 203 ML-KEM changed details from the pre-standard CRYSTALS-Kyber lineage. Do not assume their keys, ciphertexts, or protocol encodings are byte-compatible.</p>
+      </div>
+      <div class="card source-status" aria-labelledby="source-status-heading">
+        <div class="provenance-heading">
+          <div>
+            <p class="parameter-kicker">Provenance &amp; freshness</p>
+            <h3 id="source-status-heading">Standards status</h3>
+          </div>
+          <p class="review-date"><strong>Last reviewed</strong><time datetime="2026-09-19">September 19, 2026</time></p>
+        </div>
+        <p class="errata-notice"><strong>Open errata notice:</strong> NIST's November 17, 2025 planning note says an issue in FIPS 203 will be corrected in a future update or revision. This demo tracks the currently published final standard and links the live notice so readers can verify its status.</p>
+        <ul class="source-list">
+          <li><a href="https://csrc.nist.gov/pubs/fips/203/final" target="_blank" rel="noopener noreferrer">NIST FIPS 203 publication and current errata notice</a></li>
+          <li><a href="https://github.com/usnistgov/ACVP-Server/tree/975de31eb83d87039ec88934fdc47d8c312b892d/gen-val/json-files" target="_blank" rel="noopener noreferrer">Pinned NIST ACVP known-answer source at commit <code>975de31…</code></a></li>
+          <li><a href="https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html" target="_blank" rel="noopener noreferrer">NIST ACVP ML-KEM test specification</a></li>
+        </ul>
       </div>
     </section>
 
