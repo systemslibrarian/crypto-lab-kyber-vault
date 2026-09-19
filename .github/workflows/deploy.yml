@@ -35,6 +35,10 @@ jobs:
         working-directory: demos/kyber-vault
         run: npm ci
 
+      - name: Dependency vulnerability gate
+        working-directory: demos/kyber-vault
+        run: npm run audit
+
       - name: Run tests
         working-directory: demos/kyber-vault
         run: npm test
