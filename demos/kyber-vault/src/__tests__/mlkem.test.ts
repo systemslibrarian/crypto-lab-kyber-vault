@@ -38,6 +38,38 @@ describe('ML-KEM wrappers', () => {
     expect(toHex(bobSecret)).not.toBe(toHex(mallorySecret));
   });
 
+  it('corrupted ciphertext is implicitly rejected without an error oracle', async () => {
+    for (const variant of VARIANTS) {
+      const bob = await generateKeyPair(variant);
+      const alice = await encapsulate(bob.publicKey, variant);
+      const corrupted = alice.ciphertext.slice();
+      corrupted[Math.floor(corrupted.length / 2)] ^= 1;
+
+      const rejectedSecret = await decapsulate(corrupted, bob.privateKey, variant);
+
+      expect(rejectedSecret).toHaveLength(ML_KEM_PARAMS[variant].sharedSecret);
+      expect(toHex(rejectedSecret)).not.toBe(toHex(alice.sharedSecret));
+    }
+  });
+
+  it('rejects malformed artifact lengths before invoking ML-KEM', async () => {
+    for (const variant of VARIANTS) {
+      const params = ML_KEM_PARAMS[variant];
+      const bob = await generateKeyPair(variant);
+      const alice = await encapsulate(bob.publicKey, variant);
+
+      await expect(encapsulate(bob.publicKey.slice(1), variant)).rejects.toThrow(
+        /public key length mismatch/,
+      );
+      await expect(
+        decapsulate(alice.ciphertext.slice(1), bob.privateKey, variant),
+      ).rejects.toThrow(/ciphertext length mismatch/);
+      await expect(
+        decapsulate(alice.ciphertext, bob.privateKey.slice(0, params.privateKey - 1), variant),
+      ).rejects.toThrow(/private key length mismatch/);
+    }
+  });
+
   it('matches FIPS 203 parameter lengths for keys and ciphertext', async () => {
     for (const variant of VARIANTS) {
       const keyPair = await generateKeyPair(variant);

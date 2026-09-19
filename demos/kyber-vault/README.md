@@ -33,6 +33,20 @@ inline scripts or styles, and makes no third-party runtime requests. A
 Playwright security gate fails on CSP violations, browser errors, or any
 off-origin request.
 
-## 5. Part of the Crypto-Lab Suite
+## 5. Cryptographic Conformance Evidence
+
+The test suite pins a compact subset of the NIST ACVP-Server FIPS 203 vectors
+to commit `975de31eb83d87039ec88934fdc47d8c312b892d`. For ML-KEM-512,
+ML-KEM-768, and ML-KEM-1024, it checks KeyGen, encapsulation, and
+decapsulation outputs byte for byte, rejects NIST-invalid encapsulation and
+decapsulation keys, rejects malformed artifact lengths, and exercises
+implicit rejection after ciphertext corruption.
+
+The selected vector IDs and original NIST file paths are preserved in
+`test-vectors/nist-acvp-ml-kem.json`. These automated checks are reproducible
+conformance evidence; they are not a claim that this educational application
+or its JavaScript dependency has received a NIST CMVP validation certificate.
+
+## 6. Part of the Crypto-Lab Suite
 
 This demo is part of the broader Crypto-Lab collection at https://systemslibrarian.github.io/crypto-lab/.
