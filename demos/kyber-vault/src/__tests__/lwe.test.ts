@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   Q,
+  LWE_PRIMER_PARAMS,
   bruteForceSearchSpace,
   centeredRepresentative,
   cleanB,
@@ -48,10 +49,16 @@ describe('LWE arithmetic engine', () => {
   });
 
   it('reports the displayed toy search space from its actual n and q', () => {
-    const message = bruteForceSearchSpace(4, 17);
+    const message = bruteForceSearchSpace(
+      LWE_PRIMER_PARAMS.n,
+      LWE_PRIMER_PARAMS.q,
+      LWE_PRIMER_PARAMS.eta,
+    );
     expect(message).toContain('n=4, q=17');
     expect(message).toContain('83,521 candidates');
-    expect(message).toContain('not an ML-KEM security estimate');
+    expect(message).toContain('at most 625 vectors');
+    expect(message).toContain('non-uniform distribution');
+    expect(message).toContain('neither number is an ML-KEM security estimate');
     expect(message).not.toContain('q=3329');
   });
 

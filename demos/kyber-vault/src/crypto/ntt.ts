@@ -1,11 +1,13 @@
-// Number Theoretic Transform (NTT) — educational module
-// Kyber uses NTT over Zq[X]/(X^256+1) with q=3329 to multiply polynomials in O(n log n).
-// This module implements a standard radix-2 DIT NTT for small sizes to illustrate the concept.
+// Cyclic Number Theoretic Transform (NTT) primer — educational module.
+// This is a standard radix-2 DIT NTT for small sizes. It is deliberately not
+// FIPS 203's specialized incomplete negacyclic ML-KEM transform.
 
 export const Q = 3329;
 
 /** Kyber's primitive 256th root of unity ζ = 17 (mod 3329). */
 export const ZETA = 17;
+export const NTT_PRIMER_SIZE = 8;
+export const NTT_PRIMER_RING = 'Z_3329[X]/(X^8 - 1)';
 
 function mod(a: number, q: number): number {
   return ((a % q) + q) % q;
@@ -145,7 +147,7 @@ export function nttInverse(values: number[]): number[] {
 
 /**
  * Schoolbook polynomial multiplication mod (X^n − 1), mod q.
- * (Cyclic convolution — matches what the standard NTT computes.)
+ * Cyclic convolution for this primer's X^n - 1 ring.
  */
 export function polyMultiplySchoolbook(a: number[], b: number[]): number[] {
   const n = a.length;
