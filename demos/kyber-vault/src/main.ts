@@ -380,12 +380,29 @@ function render(): void {
         </div>
       </div>
 
-      <div class="pill-row">
+      <div class="pill-row" role="group" aria-label="Choose an ML-KEM parameter set">
         ${VARIANTS.map(
           (variant) =>
             `<button class="pill ${state.variant === variant ? 'active' : ''}" data-variant="${variant}" aria-pressed="${state.variant === variant}">${variantDisplay(variant)}</button>`,
         ).join('')}
       </div>
+
+      <section class="card parameter-choice" aria-labelledby="selected-profile-title">
+        <p class="parameter-kicker">Selected parameter set</p>
+        <div class="parameter-heading">
+          <h2 id="selected-profile-title">${variantDisplay(state.variant)}</h2>
+          <span class="category-badge">NIST category ${params.securityCategory}</span>
+        </div>
+        <p class="parameter-guidance"><strong>${params.profile}.</strong> ${params.guidance}</p>
+        <p class="muted">${params.tradeoff}</p>
+        <div class="sizes" aria-label="Selected parameter-set artifact sizes">
+          <span>Public key ${params.publicKey} B</span>
+          <span>Private key ${params.privateKey} B</span>
+          <span>Ciphertext ${params.ciphertext} B</span>
+          <span>Shared secret ${params.sharedSecret} B</span>
+        </div>
+        <p class="category-note"><strong>Read the category correctly:</strong> NIST security categories are comparison targets, not exact classical or quantum bit-strength measurements. Choose the category your protocol and threat model require—not simply the largest number.</p>
+      </section>
 
       <div class="card">
         <h2>ML-KEM stepper</h2>
@@ -401,12 +418,6 @@ function render(): void {
         <div class="controls">
           <button id="prev-step" ${state.step === 1 ? 'disabled' : ''}>Prev</button>
           <button id="next-step">${state.step === 4 ? 'Run again' : 'Next'}</button>
-        </div>
-        <div class="sizes">
-          <span>PK ${params.publicKey} B</span>
-          <span>SK ${params.privateKey} B</span>
-          <span>CT ${params.ciphertext} B</span>
-          <span>SS ${params.sharedSecret} B</span>
         </div>
       </div>
 
@@ -582,15 +593,21 @@ function render(): void {
       <div class="grid-three">
         ${VARIANTS.map((variant) => {
           const p = ML_KEM_PARAMS[variant];
-          return `<article class="card clickable" data-go-variant="${variant}" role="button" tabindex="0" aria-label="Select ${variantDisplay(variant)} and go to Encapsulate tab">
+          return `<article class="card clickable ${state.variant === variant ? 'selected-parameter' : ''}" data-go-variant="${variant}" role="button" tabindex="0" aria-label="Select ${variantDisplay(variant)} and go to Encapsulate tab">
             <h3>${variantDisplay(variant)}</h3>
-            <p>Security category ${p.securityCategory}</p>
+            <p class="parameter-profile"><strong>${p.profile}</strong></p>
+            <p>NIST security category ${p.securityCategory}</p>
             <p>Public key: ${p.publicKey} bytes</p>
             <p>Private key: ${p.privateKey} bytes</p>
             <p>Ciphertext: ${p.ciphertext} bytes</p>
+            <p class="muted">${p.guidance}</p>
             <div class="bar" style="--w:${Math.round((p.publicKey / 1568) * 100)}%" role="img" aria-label="Relative key size: ${Math.round((p.publicKey / 1568) * 100)}%"></div>
           </article>`;
         }).join('')}
+      </div>
+      <div class="card category-explainer">
+        <h3>Category is a requirement, not a scoreboard</h3>
+        <p>FIPS 203 assigns categories 1, 3, and 5 as standardized comparison targets. They are not exact bit-strength claims. A higher category increases keys and ciphertexts, so select the smallest profile that satisfies the protocol, data lifetime, and compliance requirement.</p>
       </div>
       <div class="card">
         <h3>Where ML-KEM / Kyber is deployed today</h3>
