@@ -15,7 +15,7 @@
 
 Live demo: [https://systemslibrarian.github.io/crypto-lab-kyber-vault/](https://systemslibrarian.github.io/crypto-lab-kyber-vault/)
 
-In the demo, you can step through KeyGen, Encaps, and Decaps, inspect artifacts and timings, and run a hybrid encrypt/decrypt flow. You can switch between ML-KEM-512, ML-KEM-768, and ML-KEM-1024, generate illustrative LWE/NTT examples, and run benchmark iterations for ML-KEM and X25519 comparison.
+In the demo, you can step through KeyGen, Encaps, and Decaps, inspect artifacts and timings, and run a hybrid encrypt/decrypt flow. You can switch between ML-KEM-512, ML-KEM-768, and ML-KEM-1024, see decision guidance and exact FIPS 203 artifact sizes for each profile, generate illustrative LWE/NTT examples, and run benchmark iterations for ML-KEM and X25519 comparison. The interface explicitly treats NIST categories as comparison targets rather than exact classical or quantum bit-strength measurements.
 
 ## 4. How to Run Locally
 

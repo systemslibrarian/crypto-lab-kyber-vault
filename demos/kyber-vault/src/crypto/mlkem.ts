@@ -24,6 +24,11 @@ export const ML_KEM_PARAMS = {
     ciphertext: 768,
     sharedSecret: 32,
     securityCategory: 1,
+    profile: 'Smallest FIPS 203 profile',
+    guidance:
+      'Choose this only when NIST category 1 is explicitly sufficient and reducing key and ciphertext size matters.',
+    tradeoff:
+      'It has the smallest artifacts, but less security margin than ML-KEM-768 and ML-KEM-1024.',
   },
   'ml-kem-768': {
     publicKey: 1184,
@@ -31,6 +36,11 @@ export const ML_KEM_PARAMS = {
     ciphertext: 1088,
     sharedSecret: 32,
     securityCategory: 3,
+    profile: 'Balanced general-purpose profile',
+    guidance:
+      'Prefer this for general-purpose deployments when NIST category 3 fits the protocol and data-lifetime requirements.',
+    tradeoff:
+      'It costs more bandwidth than ML-KEM-512 while remaining smaller than the category-5 profile.',
   },
   'ml-kem-1024': {
     publicKey: 1568,
@@ -38,6 +48,11 @@ export const ML_KEM_PARAMS = {
     ciphertext: 1568,
     sharedSecret: 32,
     securityCategory: 5,
+    profile: 'Largest FIPS 203 profile',
+    guidance:
+      'Choose this when NIST category 5 is an explicit requirement and the protocol can absorb the larger artifacts.',
+    tradeoff:
+      'It provides the highest FIPS 203 category, but category 5 is not automatically the right choice for every system.',
   },
 } as const;
 
