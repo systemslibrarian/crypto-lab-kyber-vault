@@ -412,7 +412,7 @@ function render(): void {
       <div class="pill-row" role="group" aria-label="Choose an ML-KEM parameter set">
         ${VARIANTS.map(
           (variant) =>
-            `<button class="pill ${state.variant === variant ? 'active' : ''}" data-variant="${variant}" aria-pressed="${state.variant === variant}">${variantDisplay(variant)}</button>`,
+            `<button id="variant-${variant}" class="pill ${state.variant === variant ? 'active' : ''}" data-variant="${variant}" aria-pressed="${state.variant === variant}">${variantDisplay(variant)}</button>`,
         ).join('')}
       </div>
 
