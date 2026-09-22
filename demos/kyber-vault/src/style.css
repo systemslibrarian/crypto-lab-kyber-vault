@@ -209,6 +209,15 @@ body {
   min-height: 100%;
 }
 
+/* The app renders into #app after the bundle runs, and the footer is static markup
+   directly below it, so the first render pushes the footer down the page — one large
+   layout shift. Holding a viewport's worth of space until the app fills it keeps the
+   footer below the fold on both sides of that render. The rule stops applying the
+   moment #app has a child, so it changes no rendered layout. */
+#app:empty {
+  min-height: 100vh;
+}
+
 body {
   color: var(--ink1);
   font: 16px/1.5 var(--sans);
