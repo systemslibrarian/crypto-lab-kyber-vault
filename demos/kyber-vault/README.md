@@ -53,6 +53,15 @@ complete erasure of secret copies. The interface exposes these limits next to
 the implementation details. Use a reviewed, supported, side-channel-hardened
 implementation and an authenticated protocol for production systems.
 
+Physical key-generation leakage is a distinct risk from decapsulation attacks:
+[Jahandideh, ePrint 2026/2137 (September 22, 2026)](https://eprint.iacr.org/2026/2137)
+reports a single power trace against optimized `pqm4` ML-KEM key generation on
+ARM Cortex-M4. The paper combines leakage from CBD sampling and the NTT to
+reduce an estimated lattice attack cost for ML-KEM-768. This is a target- and
+measurement-dependent implementation result, not a break of FIPS 203 or a
+measured property of this browser's JavaScript. ACVP correctness vectors do
+not establish resistance to physical leakage.
+
 ## 5. Cryptographic Conformance Evidence
 
 The test suite pins a compact subset of the NIST ACVP-Server FIPS 203 vectors

@@ -728,6 +728,7 @@ function render(): void {
           <p><code>${CRYPTO_IMPLEMENTATION.integrity}</code></p>
         </details>
         <p class="production-warning"><strong>Educational use only:</strong> use a reviewed, supported, side-channel-hardened implementation and an authenticated protocol design for production systems.</p>
+        <p class="production-warning"><strong>Physical key-generation research:</strong> <a href="https://eprint.iacr.org/2026/2137" target="_blank" rel="noopener">Jahandideh, ePrint 2026/2137 (September 22, 2026)</a> reports single-trace CBD/NTT power leakage in optimized <code>pqm4</code> ML-KEM on ARM Cortex-M4 and a reduced <em>estimated</em> lattice-attack cost for ML-KEM-768. This browser demo does not measure power; passing FIPS 203 vectors does not demonstrate side-channel resistance.</p>
       </div>
     </section>
 
