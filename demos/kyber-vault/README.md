@@ -34,6 +34,22 @@ npm run dev
 
 No environment variables are required for local development.
 
+### Deployment
+
+After changes have been reviewed and merged into `main`, `npm run deploy`
+requests the existing GitHub Pages workflow for the pushed `main` branch using
+your authenticated `gh` CLI. It deploys remote source; commit, push and review
+local changes first. The workflow runs the dependency vulnerability, unit,
+build and browser gates before publication. A successful request means the
+workflow was queued; check its result and the live page to verify publication:
+
+```bash
+gh run list --repo systemslibrarian/crypto-lab-kyber-vault --workflow deploy.yml
+```
+
+The redundant `gh-pages` publisher was removed because its transitive `braces`
+dependency has an unpatched advisory. The audit gate remains unchanged.
+
 The production page enforces a strict Content Security Policy, contains no
 inline scripts or styles, and makes no third-party runtime requests. A
 Playwright security gate fails on CSP violations, browser errors, or any
