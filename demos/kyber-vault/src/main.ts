@@ -642,7 +642,7 @@ function render(): void {
       <div class="grid-three">
         ${VARIANTS.map((variant) => {
           const p = ML_KEM_PARAMS[variant];
-          return `<article class="card clickable ${state.variant === variant ? 'selected-parameter' : ''}" data-go-variant="${variant}" role="button" tabindex="0" aria-label="Select ${variantDisplay(variant)} and go to Encapsulate tab">
+          return `<article class="card clickable ${state.variant === variant ? 'selected-parameter' : ''}" data-go-variant="${variant}" role="button" tabindex="0">
             <h3>${variantDisplay(variant)}</h3>
             <p class="parameter-profile"><strong>${p.profile}</strong></p>
             <p>NIST security category ${p.securityCategory}</p>
