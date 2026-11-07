@@ -729,6 +729,7 @@ function render(): void {
         </details>
         <p class="production-warning"><strong>Educational use only:</strong> use a reviewed, supported, side-channel-hardened implementation and an authenticated protocol design for production systems.</p>
         <p class="production-warning"><strong>Physical key-generation research:</strong> <a href="https://eprint.iacr.org/2026/2137" target="_blank" rel="noopener">Jahandideh, ePrint 2026/2137 (September 22, 2026)</a> reports single-trace CBD/NTT power leakage in optimized <code>pqm4</code> ML-KEM on ARM Cortex-M4 and a reduced <em>estimated</em> lattice-attack cost for ML-KEM-768. This browser demo does not measure power; passing FIPS 203 vectors does not demonstrate side-channel resistance.</p>
+        <p class="production-warning"><strong>Key-generation fault research:</strong> <a href="https://eprint.iacr.org/2026/2766" target="_blank" rel="noopener noreferrer">Kumar et al., Keyber, ePrint 2026/2766 (November 4, 2026)</a> is a preprint reporting full ML-KEM-512 key recovery on an ARM Cortex-M4 after one physical overclock fault during key generation and subsequent decapsulation queries. The faulty public key carries an induced error. This is conditional on access to a faultable device and a decapsulation oracle, not a public-key-only break of ML-KEM or an attack reproduced by this browser demo. Protect key generation as well as decapsulation.</p>
       </div>
     </section>
 

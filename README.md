@@ -41,6 +41,8 @@ authentication.
 
 ## Standards and Deployment Evidence
 
+**Keyber (November 4, 2026):** [Kumar et al., ePrint 2026/2766](https://eprint.iacr.org/2026/2766) is a preprint reporting end-to-end ML-KEM-512 secret-key recovery on an ARM Cortex-M4 after one physical overclock fault during key generation, followed by decapsulation queries to the faulty key. Its broader parameter-set analysis is not the same as a hardware demonstration at every level. This result depends on physical fault access and an oracle; it is not a mathematical or public-key-only break. The browser demo neither injects physical faults nor models this attack. Production implementations need to harden key generation as well as decapsulation.
+
 Claims were last reviewed on **September 19, 2026**.
 
 - [NIST FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) is the final ML-KEM
