@@ -36,3 +36,19 @@ test('standards claims expose provenance, freshness, and the Kyber boundary', as
     /975de31eb83d87039ec88934fdc47d8c312b892d/,
   );
 });
+
+// The FIPS 203 blockquote is a verbatim quotation, so pin its words. An earlier
+// revision showed a sentence ("ML-KEM is intended to provide protection for
+// sensitive information that may be at risk from a future quantum computer.")
+// that does not occur in FIPS 203 at all.
+test('the FIPS 203 blockquote quotes the standard verbatim, with its section', async ({ page }) => {
+  await page.goto('.');
+  await page.locator('#tab-how').click();
+
+  const quotation = page.locator('#panel-how blockquote');
+  await expect(quotation).toContainText(
+    'ML-KEM is an approved alternative that is presently believed to be secure, even against adversaries in possession of a large-scale fault-tolerant quantum computer.',
+  );
+  await expect(quotation).toContainText('NIST FIPS 203 §1.1');
+  await expect(quotation).not.toContainText('at risk from a future quantum computer');
+});

@@ -847,7 +847,7 @@ function render(): void {
         </div>
 
         <blockquote>
-          "ML-KEM is intended to provide protection for sensitive information that may be at risk from a future quantum computer." - NIST FIPS 203
+          "ML-KEM is an approved alternative that is presently believed to be secure, even against adversaries in possession of a large-scale fault-tolerant quantum computer." - NIST FIPS 203 &sect;1.1 (the alternative is to the SP 800-56A and SP 800-56B key-establishment schemes, which the same section calls vulnerable to attacks that use sufficiently-capable quantum computers)
         </blockquote>
         <p>Attribution: CRYSTALS-Kyber authors, standardized by NIST in August 2024.</p>
         <p>Portfolio link: ML-KEM for key agreement + iron-serpent (Serpent-256-CTR) for data encryption forms a complete hybrid encryption system.</p>
