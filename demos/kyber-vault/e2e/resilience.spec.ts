@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import { auditControlNames, formatControlNameFailures } from './control-names';
 import { expect, test } from '@playwright/test';
 
 const TAB_IDS = ['encaps', 'lattice', 'params', 'compare', 'how'] as const;
@@ -40,6 +41,12 @@ test('forced-colors mode preserves semantics and has no WCAG A/AA violations', a
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
   expect(results.violations.map(({ id }) => id)).toEqual([]);
+  // axe's `label` rule accepts a bare `placeholder` as an accessible name, so a
+  // deleted label can leave this gate green. See `control-names.ts`.
+  expect(
+    formatControlNameFailures(await auditControlNames(page)),
+    'form controls named only by placeholder/title after the params tab is restored'
+  ).toEqual([]);
 });
 
 test('reduced-motion mode collapses animation and transition durations', async ({ page }) => {

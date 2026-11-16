@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import { auditControlNames, formatControlNameFailures } from './control-names';
 import { expect, test, type Page } from '@playwright/test';
 
 /**
@@ -33,6 +34,12 @@ async function scan(page: Page, context: string): Promise<void> {
     nodes: v.nodes.map((n) => n.target.join(' ')).slice(0, 5),
   }));
   expect(summary, `violations in ${context}`).toEqual([]);
+  // axe's `label` rule accepts a bare `placeholder` as an accessible name, so a
+  // deleted label can leave this gate green. See `control-names.ts`.
+  expect(
+    formatControlNameFailures(await auditControlNames(page)),
+    `form controls named only by placeholder/title in ${context}`
+  ).toEqual([]);
 }
 
 async function driveAndScan(page: Page, theme: string): Promise<void> {
