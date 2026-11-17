@@ -1,5 +1,15 @@
 # crypto-lab-kyber-vault
 
+## Using ML-KEM in a protocol
+
+[CFRG ML-KEM Security Considerations, draft-00](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ml-kem-security-considerations-00), 16 November 2026, §§1–4, is work in progress, not a final standard. FIPS 203 remains the algorithm standard.
+
+- Encapsulation needs the recipient’s public key first. A KEM cannot simply replace every DH operation, including Signal’s DH ratchet, implicit DH authentication or static-static DH.
+- Protect the key-generation seed like the private key: it reconstructs the keypair. Delete secret intermediate values when no longer needed; public matrix data is different. This browser demo retains working keys and cannot guarantee secure memory erasure.
+- The decapsulator recovers the encapsulator’s random input m. With a weak generator, that output may expose its state or other outputs; m is not disclosed to every eavesdropper. The demo uses crypto.getRandomValues.
+
+See **Parameter sets → Using ML-KEM in a protocol** in the demo. This is production guidance, not an attack or a secure-erasure guarantee implemented by the page.
+
 ## What It Is
 
 This repository hosts a browser demo of final FIPS 203 ML-KEM, the NIST

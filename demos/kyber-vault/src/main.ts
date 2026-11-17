@@ -695,6 +695,16 @@ function render(): void {
           <li><a href="https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html" target="_blank" rel="noopener noreferrer">NIST ACVP ML-KEM test specification</a></li>
         </ul>
       </div>
+      <div class="card" id="mlkem-protocol-guidance" aria-labelledby="protocol-guidance-heading">
+        <h3 id="protocol-guidance-heading">Using ML-KEM in a protocol</h3>
+        <p><a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ml-kem-security-considerations-00" target="_blank" rel="noopener noreferrer">CFRG ML-KEM Security Considerations, draft-00 (16 November 2026)</a> is work in progress, not a final standard; FIPS 203 remains the algorithm standard.</p>
+        <ul>
+          <li><strong>Check the interaction pattern.</strong> Encapsulation needs the recipient’s public key first. A KEM cannot simply replace every DH operation, including Signal’s DH ratchet, implicit DH authentication or static-static DH.</li>
+          <li><strong>Protect the key-generation seed like the private key.</strong> The seed can reconstruct the keypair. Delete secret intermediate values when no longer needed; public matrix data is different. This browser demo retains working keys and cannot guarantee secure memory erasure.</li>
+          <li><strong>Use a secure random generator.</strong> The decapsulator can recover the encapsulator’s random input m. If the generator is weak, that output may reveal its state or other outputs; it is not a disclosure of m to every eavesdropper. This demo uses crypto.getRandomValues.</li>
+        </ul>
+        <p>The draft’s §§1–4 discuss these boundaries. They are protocol and implementation guidance, not a new attack performed here.</p>
+      </div>
       <div class="card implementation-card" aria-labelledby="implementation-heading">
         <p class="parameter-kicker">Runtime disclosure</p>
         <h3 id="implementation-heading">What exactly runs here</h3>

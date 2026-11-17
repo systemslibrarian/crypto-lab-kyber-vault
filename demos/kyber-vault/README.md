@@ -1,5 +1,15 @@
 # kyber-vault demo
 
+## Using ML-KEM in a protocol
+
+[CFRG ML-KEM Security Considerations, draft-00](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-ml-kem-security-considerations-00), 16 November 2026, §§1–4, is work in progress, not a final standard. FIPS 203 remains the algorithm standard.
+
+- Encapsulation needs the recipient’s public key first. A KEM cannot simply replace every DH operation, including Signal’s DH ratchet, implicit DH authentication or static-static DH.
+- Protect the key-generation seed like the private key: it reconstructs the keypair. Delete secret intermediate values when no longer needed; public matrix data is different. This browser demo retains working keys and cannot guarantee secure memory erasure.
+- The decapsulator recovers the encapsulator’s random input m. With a weak generator, that output may expose its state or other outputs; m is not disclosed to every eavesdropper. The demo uses crypto.getRandomValues.
+
+See **Parameter sets → Using ML-KEM in a protocol** in the demo. This is production guidance, not an attack or a secure-erasure guarantee implemented by the page.
+
 ## 1. What It Is
 
 `kyber-vault` is a browser demo of final FIPS 203 ML-KEM, the NIST standard derived from CRYSTALS-Kyber. It includes ML-KEM-512, ML-KEM-768, and ML-KEM-1024 flows from key generation through encapsulation and decapsulation. It also demonstrates a hybrid construction using ML-KEM + HKDF-SHA256 + AES-256-GCM for authenticated message encryption. The core problem solved here is quantum-resistant key establishment so two parties can derive a shared secret over an untrusted network. This is post-quantum asymmetric cryptography (a KEM), with an additional symmetric authenticated-encryption layer in the hybrid path.
