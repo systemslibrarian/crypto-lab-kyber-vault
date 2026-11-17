@@ -10,7 +10,7 @@ import { defineConfig } from '@playwright/test';
  * longer compiles — which silently invalidates every mutation check here.
  */
 const BASE = '/crypto-lab-kyber-vault/';
-const PORT = 4715;
+const PORT = 4259;
 const ORIGIN = `http://localhost:${PORT}`;
 
 export default defineConfig({
