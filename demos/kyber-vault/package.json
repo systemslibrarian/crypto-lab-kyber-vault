@@ -7,14 +7,15 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:lighthouse": "vite build --base / --outDir lighthouse-dist",
-    "audit": "npm audit --audit-level=moderate",
+    "audit": "npm audit --omit=dev --audit-level=high",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "deploy": "gh workflow run deploy.yml --repo systemslibrarian/crypto-lab-kyber-vault --ref main",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:a11y": "playwright test",
-    "sbom": "npm sbom --sbom-format cyclonedx"
+    "sbom": "npm sbom --sbom-format cyclonedx",
+    "audit:full": "npm audit"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
