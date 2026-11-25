@@ -116,7 +116,7 @@ export async function hybridDecrypt(
       aesKey,
       toArrayBuffer(combined),
     );
-    return new TextDecoder().decode(new Uint8Array(plaintextBuffer));
+    return new TextDecoder('utf-8', { ignoreBOM: true }).decode(new Uint8Array(plaintextBuffer));
   } catch {
     throw new Error('Authentication failed');
   }

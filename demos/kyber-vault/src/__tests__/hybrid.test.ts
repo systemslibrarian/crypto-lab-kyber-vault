@@ -15,6 +15,14 @@ describe('Hybrid ML-KEM + AES-256-GCM flow', () => {
     }
   });
 
+  it('preserves empty messages and a literal leading Unicode byte-order mark', async () => {
+    const recipient = await generateKeyPair('ml-kem-768');
+    for (const message of ['', '\uFEFFArchive 📚']) {
+      const payload = await hybridEncrypt(message, recipient.publicKey, 'ml-kem-768');
+      expect(await hybridDecrypt(payload, recipient.privateKey)).toBe(message);
+    }
+  });
+
   it('tampered ML-KEM ciphertext causes explicit AES authentication failure', async () => {
     const recipient = await generateKeyPair('ml-kem-768');
     const payload = await hybridEncrypt('tamper test', recipient.publicKey, 'ml-kem-768');

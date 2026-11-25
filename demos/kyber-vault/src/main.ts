@@ -79,7 +79,7 @@ const state: {
   status: string;
   message: string;
   hybridPayload: HybridEncryptResult | null;
-  hybridDecrypted: string;
+  hybridDecrypted: string | null;
   hybridNotice: string;
   hybridError: string;
   lwe: LWEInstance;
@@ -113,7 +113,7 @@ const state: {
   status: 'Ready to run ML-KEM KeyGen for Bob.',
   message: 'Quantum-safe hello from kyber-vault.',
   hybridPayload: null,
-  hybridDecrypted: '',
+  hybridDecrypted: null,
   hybridNotice: '',
   hybridError: '',
   lwe: generateIllustrativeLWEInstance(4, 4, ILLUSTRATIVE_Q),
@@ -135,16 +135,23 @@ function variantDisplay(variant: MLKEMVariant): string {
   return 'ML-KEM-1024';
 }
 
+let hybridRevision = 0;
+
+function retireHybridRecord(): void {
+  hybridRevision++;
+  state.hybridPayload = null;
+  state.hybridDecrypted = null;
+  state.hybridNotice = '';
+  state.hybridError = '';
+}
+
 function resetFlow(): void {
   state.step = 1;
   state.keyPair = null;
   state.encapsResult = null;
   state.bobSecret = null;
   state.timings = {};
-  state.hybridPayload = null;
-  state.hybridDecrypted = '';
-  state.hybridNotice = '';
-  state.hybridError = '';
+  retireHybridRecord();
   state.status = 'Variant changed. Run KeyGen to start a fresh session.';
 }
 
@@ -315,7 +322,11 @@ async function runNextStep(): Promise<void> {
   const params = ML_KEM_PARAMS[state.variant];
   if (state.step === 1) {
     const start = performance.now();
-    state.keyPair = await generateKeyPair(state.variant);
+    const variant = state.variant;
+    const pair = await generateKeyPair(variant);
+    if (state.variant !== variant) return;
+    retireHybridRecord();
+    state.keyPair = pair;
     state.timings.keygen = performance.now() - start;
     state.status = `KeyGen complete (${params.publicKey}B public, ${params.privateKey}B private).`;
     state.step = 2;
@@ -353,6 +364,34 @@ async function runNextStep(): Promise<void> {
   }
 
   state.status = 'Key agreement complete.';
+}
+
+function hybridRecordHtml(): string {
+  let decrypted = '';
+  if (state.hybridDecrypted !== null) {
+    decrypted = state.hybridDecrypted.length === 0
+      ? 'Authenticated empty message (0 bytes).'
+      : `Decrypted plaintext: ${escapeHtml(state.hybridDecrypted)}`;
+  }
+  return `
+    <p><strong>Public key fingerprint</strong>: ${state.hybridPayload?.publicKeyFingerprint ?? '--'}</p>
+    <p><strong>ML-KEM ciphertext</strong>: <code>${state.hybridPayload?.mlkemCiphertext.slice(0, 64) ?? '--'}</code></p>
+    <p><strong>AES ciphertext</strong>: <code>${state.hybridPayload?.aesCiphertext.slice(0, 64) ?? '--'}</code></p>
+    <p><strong>IV</strong>: <code>${state.hybridPayload?.aesIV ?? '--'}</code></p>
+    <p><strong>Tag</strong>: <code>${state.hybridPayload?.aesTag ?? '--'}</code></p>
+    <p class="ok-text" aria-live="polite">${decrypted}</p>
+    <p id="hybrid-status" class="status" role="status" aria-live="polite">${escapeHtml(state.hybridNotice)}</p>
+    <p class="bad-text" role="alert" aria-live="assertive">${escapeHtml(state.hybridError)}</p>`;
+}
+
+// Update only the output while the user types so the draft keeps focus and its selection.
+function refreshHybridRecord(): void {
+  const record = appRoot.querySelector<HTMLElement>('#hybrid-record');
+  if (record) record.innerHTML = hybridRecordHtml();
+  for (const id of ['hybrid-decrypt', 'hybrid-tamper']) {
+    const button = appRoot.querySelector<HTMLButtonElement>(`#${id}`);
+    if (button) button.disabled = !state.hybridPayload;
+  }
 }
 
 function render(): void {
@@ -487,14 +526,7 @@ function render(): void {
           <button id="hybrid-decrypt" ${state.hybridPayload ? '' : 'disabled'}>Decrypt message</button>
           <button id="hybrid-tamper" ${state.hybridPayload ? '' : 'disabled'}>Tamper with ML-KEM ciphertext</button>
         </div>
-        <p><strong>Public key fingerprint</strong>: ${state.hybridPayload?.publicKeyFingerprint ?? '--'}</p>
-        <p><strong>ML-KEM ciphertext</strong>: <code>${state.hybridPayload?.mlkemCiphertext.slice(0, 64) ?? '--'}</code></p>
-        <p><strong>AES ciphertext</strong>: <code>${state.hybridPayload?.aesCiphertext.slice(0, 64) ?? '--'}</code></p>
-        <p><strong>IV</strong>: <code>${state.hybridPayload?.aesIV ?? '--'}</code></p>
-        <p><strong>Tag</strong>: <code>${state.hybridPayload?.aesTag ?? '--'}</code></p>
-        <p class="ok-text" aria-live="polite">${state.hybridDecrypted ? `Decrypted plaintext: ${escapeHtml(state.hybridDecrypted)}` : ''}</p>
-        <p id="hybrid-status" class="status" role="status" aria-live="polite">${escapeHtml(state.hybridNotice)}</p>
-        <p class="bad-text" role="alert" aria-live="assertive">${escapeHtml(state.hybridError)}</p>
+        <div id="hybrid-record">${hybridRecordHtml()}</div>
       </div>
     </section>
 
@@ -870,7 +902,11 @@ function render(): void {
   if (textarea) {
     textarea.value = state.message;
     textarea.addEventListener('input', () => {
+      if (state.message === textarea.value) return;
       state.message = textarea.value;
+      retireHybridRecord();
+      state.hybridNotice = 'Draft changed. Encrypt this message to create a new ciphertext.';
+      refreshHybridRecord();
     });
   }
 
@@ -975,18 +1011,26 @@ function render(): void {
   const encryptButton = appRoot.querySelector<HTMLButtonElement>('#hybrid-encrypt');
   if (encryptButton) {
     encryptButton.addEventListener('click', async () => {
+      retireHybridRecord();
+      const revision = hybridRevision;
+      const { message, variant } = state;
+      state.hybridNotice = 'Encrypting message…';
+      refreshHybridRecord();
       try {
         if (!state.keyPair) {
           const t0 = performance.now();
-          state.keyPair = await generateKeyPair(state.variant);
+          const pair = await generateKeyPair(variant);
+          if (revision !== hybridRevision) return;
+          state.keyPair = pair;
           state.timings.keygen = performance.now() - t0;
           state.step = Math.max(state.step, 2);
         }
-        state.hybridPayload = await hybridEncrypt(state.message, state.keyPair.publicKey, state.variant);
-        state.hybridDecrypted = '';
+        const payload = await hybridEncrypt(message, state.keyPair.publicKey, variant);
+        if (revision !== hybridRevision) return;
+        state.hybridPayload = payload;
         state.hybridNotice = 'Fresh ciphertext created. Decrypt to run authentication.';
-        state.hybridError = '';
       } catch (error) {
+        if (revision !== hybridRevision) return;
         state.hybridNotice = '';
         state.hybridError = (error as Error).message;
       }
@@ -997,17 +1041,19 @@ function render(): void {
   const decryptButton = appRoot.querySelector<HTMLButtonElement>('#hybrid-decrypt');
   if (decryptButton) {
     decryptButton.addEventListener('click', async () => {
+      if (!state.hybridPayload || !state.keyPair) return;
+      const revision = ++hybridRevision;
       try {
-        if (!state.hybridPayload || !state.keyPair) {
-          throw new Error('Generate keys and encrypt first');
-        }
-        state.hybridDecrypted = await hybridDecrypt(state.hybridPayload, state.keyPair.privateKey);
+        const plaintext = await hybridDecrypt(state.hybridPayload, state.keyPair.privateKey);
+        if (revision !== hybridRevision) return;
+        state.hybridDecrypted = plaintext;
         state.hybridNotice = 'Authentication passed during this decryption.';
         state.hybridError = '';
       } catch (error) {
+        if (revision !== hybridRevision) return;
         state.hybridNotice = '';
         state.hybridError = (error as Error).message;
-        state.hybridDecrypted = '';
+        state.hybridDecrypted = null;
       }
       render();
     });
@@ -1019,13 +1065,14 @@ function render(): void {
       if (!state.hybridPayload) {
         return;
       }
+      hybridRevision++;
       state.hybridPayload = {
         ...state.hybridPayload,
         mlkemCiphertext: flipBase64Byte(state.hybridPayload.mlkemCiphertext, 3),
       };
       state.hybridNotice = 'Ciphertext changed. Authentication has not run yet; click Decrypt message to test it.';
       state.hybridError = '';
-      state.hybridDecrypted = '';
+      state.hybridDecrypted = null;
       render();
     });
   }

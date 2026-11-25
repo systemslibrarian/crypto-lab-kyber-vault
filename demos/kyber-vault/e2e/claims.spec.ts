@@ -37,3 +37,44 @@ test('tampering reports authentication only after decryption actually runs', asy
   await expect(page.locator('#panel-encaps .bad-text')).toHaveText('Authentication failed');
   await expect(page.locator('#hybrid-status')).toBeEmpty();
 });
+
+test('a draft edit retires the packet and its verdict, including an in-flight decryption', async ({ page }) => {
+  await page.goto('.');
+  const draft = page.locator('#hybrid-message');
+  const encrypt = page.locator('#hybrid-encrypt');
+  const decrypt = page.locator('#hybrid-decrypt');
+  const plaintext = page.locator('#hybrid-record .ok-text');
+  await draft.fill('First draft');
+  await encrypt.click();
+  await decrypt.click();
+  await expect(plaintext).toHaveText('Decrypted plaintext: First draft');
+
+  // Pause the real decryption so the learner can edit before its result returns.
+  await page.evaluate(() => {
+    const decryptBytes = crypto.subtle.decrypt.bind(crypto.subtle);
+    crypto.subtle.decrypt = async (...args) => {
+      const bytes = await decryptBytes(...args);
+      document.dispatchEvent(new Event('decrypt-ready'));
+      await new Promise<void>(resolve => document.addEventListener('release-decrypt', () => resolve(), { once: true }));
+      crypto.subtle.decrypt = decryptBytes;
+      return bytes;
+    };
+    document.addEventListener('decrypt-ready', () => {
+      document.documentElement.dataset.decryptReady = 'true';
+    }, { once: true });
+  });
+  await decrypt.click();
+  await expect(page.locator('html')).toHaveAttribute('data-decrypt-ready', 'true');
+  await draft.fill('Another draft');
+  await page.evaluate(() => document.dispatchEvent(new Event('release-decrypt')));
+  await expect(draft).toBeFocused();
+  await expect(decrypt).toBeDisabled();
+  await expect(page.locator('#hybrid-tamper')).toBeDisabled();
+  await expect(plaintext).toBeEmpty();
+  await expect(page.locator('#hybrid-status')).toContainText('Draft changed');
+
+  await draft.fill('');
+  await encrypt.click();
+  await decrypt.click();
+  await expect(plaintext).toHaveText('Authenticated empty message (0 bytes).');
+});
