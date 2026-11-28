@@ -78,3 +78,15 @@ test('a draft edit retires the packet and its verdict, including an in-flight de
   await decrypt.click();
   await expect(plaintext).toHaveText('Authenticated empty message (0 bytes).');
 });
+
+test('identifies the fingerprint and the two meanings of hybrid at their controls', async ({ page }) => {
+  await page.goto('.');
+  await expect(page.getByRole('heading', { name: /KEM–DEM hybrid encryption/ })).toBeVisible();
+  await page.locator('#hybrid-encrypt').click();
+  const fingerprint = page.locator('#hybrid-record p').filter({ hasText: 'Public key fingerprint' });
+  await expect(fingerprint).toContainText(/[0-9a-f]{16}/);
+  await expect(fingerprint).toContainText('for display only');
+  await page.locator('#tab-compare').click();
+  await expect(page.locator('#panel-compare')).toContainText('each contribute a shared secret');
+  await expect(page.locator('#panel-compare')).toContainText('Shared randomness failures');
+});

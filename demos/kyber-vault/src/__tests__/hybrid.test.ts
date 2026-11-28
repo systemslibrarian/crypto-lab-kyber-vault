@@ -23,6 +23,21 @@ describe('Hybrid ML-KEM + AES-256-GCM flow', () => {
     }
   });
 
+  it.each(VARIANTS)('checks the encrypted fields and treats the fingerprint as a display label (%s)', async (variant) => {
+    const recipient = await generateKeyPair(variant);
+    const payload = await hybridEncrypt('Library notice', recipient.publicKey, variant);
+    expect(payload.publicKeyFingerprint).toMatch(/^[0-9a-f]{16}$/);
+    for (const field of ['mlkemCiphertext', 'aesCiphertext', 'aesIV', 'aesTag'] as const) {
+      const changed = { ...payload, [field]: flipBase64Byte(payload[field]) };
+      await expect(hybridDecrypt(changed, recipient.privateKey)).rejects.toThrow('Authentication failed');
+    }
+    const relabeled = { ...payload, publicKeyFingerprint: 'informational' };
+    expect(await hybridDecrypt(relabeled, recipient.privateKey)).toBe('Library notice');
+    const otherVariant = variant === 'ml-kem-768' ? 'ml-kem-512' : 'ml-kem-768';
+    await expect(hybridDecrypt({ ...payload, variant: otherVariant }, recipient.privateKey))
+      .rejects.toThrow(/length mismatch/);
+  });
+
   it('tampered ML-KEM ciphertext causes explicit AES authentication failure', async () => {
     const recipient = await generateKeyPair('ml-kem-768');
     const payload = await hybridEncrypt('tamper test', recipient.publicKey, 'ml-kem-768');

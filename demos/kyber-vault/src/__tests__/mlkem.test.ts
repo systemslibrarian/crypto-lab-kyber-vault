@@ -99,6 +99,15 @@ describe('ML-KEM wrappers', () => {
     }
   });
 
+  it.each(VARIANTS)('rejects a correctly sized encapsulation key with a noncanonical coefficient (%s)', async (variant) => {
+    const { publicKey } = await generateKeyPair(variant);
+    // Set the first packed 12-bit coefficient to q (3329). Leave the next one intact.
+    const malformed = publicKey.slice();
+    malformed[0] = 0x01;
+    malformed[1] = (malformed[1] & 0xf0) | 0x0d;
+    await expect(encapsulate(malformed, variant)).rejects.toThrow(/publicKey modulus/i);
+  });
+
   it('matches FIPS 203 parameter lengths for keys and ciphertext', async () => {
     for (const variant of VARIANTS) {
       const keyPair = await generateKeyPair(variant);

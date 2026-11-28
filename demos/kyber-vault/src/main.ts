@@ -374,7 +374,7 @@ function hybridRecordHtml(): string {
       : `Decrypted plaintext: ${escapeHtml(state.hybridDecrypted)}`;
   }
   return `
-    <p><strong>Public key fingerprint</strong>: ${state.hybridPayload?.publicKeyFingerprint ?? '--'}</p>
+    <p><strong>Public key fingerprint</strong>: ${state.hybridPayload?.publicKeyFingerprint ?? '--'} <small>(first 64 bits of SHA-256, for display only). Decryption does not check this label or authenticate the recipient’s identity.</small></p>
     <p><strong>ML-KEM ciphertext</strong>: <code>${state.hybridPayload?.mlkemCiphertext.slice(0, 64) ?? '--'}</code></p>
     <p><strong>AES ciphertext</strong>: <code>${state.hybridPayload?.aesCiphertext.slice(0, 64) ?? '--'}</code></p>
     <p><strong>IV</strong>: <code>${state.hybridPayload?.aesIV ?? '--'}</code></p>
@@ -516,8 +516,8 @@ function render(): void {
       }
 
       <div class="card">
-        <h2>Full hybrid encryption (ML-KEM + AES-256-GCM)</h2>
-        <p class="intro-note"><strong>Hybrid</strong> here means the KEM establishes a shared secret, then a fast symmetric cipher (AES-256-GCM) uses that secret to actually encrypt your message — a KEM alone only agrees a key, it does not encrypt data.</p>
+        <h2>KEM–DEM hybrid encryption (ML-KEM + AES-256-GCM)</h2>
+        <p class="intro-note">ML-KEM establishes a shared secret. HKDF-SHA-256 derives the AES key, and AES-256-GCM encrypts and authenticates the message. The vault runs one key-establishment algorithm.</p>
         <p>Flow: Encaps -> <abbr title="HMAC-based Key Derivation Function (RFC 5869): derives a variant-bound AES key and gives this demo an explicit key schedule.">HKDF-SHA256</abbr>(salt=kyber-vault-v1) -> AES-256-GCM encrypt/decrypt.</p>
         <label for="hybrid-message" class="sr-only">Message to encrypt</label>
         <textarea id="hybrid-message" rows="4" placeholder="Enter a message to encrypt" aria-label="Message to encrypt"></textarea>
@@ -778,7 +778,7 @@ function render(): void {
     <section class="panel ${state.activeTab === 'compare' ? 'visible' : ''}" id="panel-compare" role="tabpanel" aria-labelledby="tab-compare" ${state.activeTab !== 'compare' ? 'hidden' : ''}>
       <div class="card">
         <h2>KEM vs key exchange</h2>
-        <p>X25519 is classical ECDH, while ML-KEM is a post-quantum key encapsulation mechanism. Hybrid migration combines X25519 + ML-KEM to hedge against both quantum and implementation risk.</p>
+        <p>In the TLS 1.3 X25519MLKEM768 group, X25519 and ML-KEM-768 each contribute a shared secret. The protocol aims to protect the session if one component remains secure under the combiner’s assumptions. Shared randomness failures or a compromised endpoint can still defeat the exchange. The vault above uses ML-KEM alone for key establishment. <a href="https://www.rfc-editor.org/rfc/rfc10024.html">RFC 10024, §§3–4</a>.</p>
       </div>
       <div class="card wire-cost-card">
         <p class="parameter-kicker">Comparable payload accounting</p>
