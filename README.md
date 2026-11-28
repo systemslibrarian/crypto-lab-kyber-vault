@@ -15,9 +15,11 @@ See **Parameter sets → Using ML-KEM in a protocol** in the demo. This is produ
 This repository hosts a browser demo of final FIPS 203 ML-KEM, the NIST
 standard derived from CRYSTALS-Kyber. It runs ML-KEM-512, ML-KEM-768, and
 ML-KEM-1024 through key generation, encapsulation, and decapsulation. A
-teaching-only hybrid path derives a variant-bound AES-256-GCM key with
+teaching-only KEM–DEM path uses one KEM (ML-KEM) to establish a shared secret and derives a variant-bound AES-256-GCM key with
 HKDF-SHA256. ML-KEM establishes a key; it is not message encryption or peer
 authentication.
+
+The envelope displays the first eight bytes of SHA-256 over the recipient public key as 16 hexadecimal digits. The decryptor never consults this display field. Authenticating a recipient requires a separate, trusted binding between their identity and public key.
 
 ## Exhibits
 
